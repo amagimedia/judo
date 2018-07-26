@@ -69,6 +69,12 @@
 
 [[projects]]
   branch = "master"
+  name = "gitlab.com/ajithnn/judo"
+  packages = ["message"]
+  revision = "5a8a086cbbf7bf1fc09194c6d9487ae6fc8eaee0"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
   revision = "a200a19cb90b19de298170992778b1fda7217bd6"
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "02f5cbbc3b157906019c920ab92bf8dcf7b793eea6a12db8d336e6b9606d0299"
+  inputs-digest = "f722055b0a277701d2dc0c337d10fb0ad53c692007a9e1aab3251d74ae794719"
   solver-name = "gps-cdcl"
   solver-version = 1
