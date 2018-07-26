@@ -2,10 +2,10 @@ package sub
 
 import (
 	"errors"
+	"github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/message/mocks"
 	nats "github.com/nats-io/go-nats"
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/ajithnn/judo/message"
-	"gitlab.com/ajithnn/judo/message/mocks"
 	"testing"
 	"time"
 )

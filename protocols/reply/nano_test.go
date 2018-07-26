@@ -2,9 +2,9 @@ package reply
 
 import (
 	"errors"
+	"github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/message/mocks"
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/ajithnn/judo/message"
-	"gitlab.com/ajithnn/judo/message/mocks"
 	"testing"
 	"time"
 )

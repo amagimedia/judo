@@ -3,10 +3,10 @@ package reply
 import (
 	"errors"
 	"fmt"
+	"github.com/amagimedia/judo/client"
+	judoConfig "github.com/amagimedia/judo/config"
+	jmsg "github.com/amagimedia/judo/message"
 	nats "github.com/nats-io/go-nats"
-	"gitlab.com/ajithnn/judo/client"
-	judoConfig "gitlab.com/ajithnn/judo/config"
-	jmsg "gitlab.com/ajithnn/judo/message"
 )
 
 var natsmap = map[string]string{

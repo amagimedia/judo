@@ -1,12 +1,12 @@
 package message_test
 
 import (
+	"github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/message/mocks"
 	"github.com/go-mangos/mangos/protocol/sub"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
 	"github.com/streadway/amqp"
-	"gitlab.com/ajithnn/judo/message"
-	"gitlab.com/ajithnn/judo/message/mocks"
 	"testing"
 )
 

@@ -2,11 +2,11 @@ package sub
 
 import (
 	"errors"
+	"github.com/amagimedia/judo/config"
+	"github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/message/mocks"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/stretchr/testify/mock"
-	"gitlab.com/ajithnn/judo/config"
-	"gitlab.com/ajithnn/judo/message"
-	"gitlab.com/ajithnn/judo/message/mocks"
 	"testing"
 	"time"
 )

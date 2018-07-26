@@ -2,10 +2,10 @@ package sub
 
 import (
 	"errors"
+	"github.com/amagimedia/judo/config"
+	"github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/message/mocks"
 	"github.com/streadway/amqp"
-	"gitlab.com/ajithnn/judo/config"
-	"gitlab.com/ajithnn/judo/message"
-	"gitlab.com/ajithnn/judo/message/mocks"
 	"testing"
 	"time"
 )

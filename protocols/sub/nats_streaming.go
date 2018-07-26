@@ -2,10 +2,10 @@ package sub
 
 import (
 	"fmt"
+	"github.com/amagimedia/judo/client"
+	judoConfig "github.com/amagimedia/judo/config"
+	jmsg "github.com/amagimedia/judo/message"
 	natsStream "github.com/nats-io/go-nats-streaming"
-	"gitlab.com/ajithnn/judo/client"
-	judoConfig "gitlab.com/ajithnn/judo/config"
-	jmsg "gitlab.com/ajithnn/judo/message"
 )
 
 var natsSmap = map[string]string{

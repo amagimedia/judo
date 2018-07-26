@@ -1,12 +1,12 @@
 package reply
 
 import (
+	"github.com/amagimedia/judo/client"
+	judoConfig "github.com/amagimedia/judo/config"
+	jmsg "github.com/amagimedia/judo/message"
 	mangoRep "github.com/go-mangos/mangos/protocol/rep"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
-	"gitlab.com/ajithnn/judo/client"
-	judoConfig "gitlab.com/ajithnn/judo/config"
-	jmsg "gitlab.com/ajithnn/judo/message"
 )
 
 type nanoConnector func() (jmsg.RawSocket, error)

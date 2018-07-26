@@ -3,10 +3,10 @@ package judo
 import (
 	"errors"
 	"fmt"
-	"gitlab.com/ajithnn/judo/client"
-	judoMsg "gitlab.com/ajithnn/judo/message"
-	judoReply "gitlab.com/ajithnn/judo/protocols/reply"
-	judoSub "gitlab.com/ajithnn/judo/protocols/sub"
+	"github.com/amagimedia/judo/client"
+	judoMsg "github.com/amagimedia/judo/message"
+	judoReply "github.com/amagimedia/judo/protocols/reply"
+	judoSub "github.com/amagimedia/judo/protocols/sub"
 )
 
 func NewSubscriber(protocol, method string) (client.JudoClient, error) {
