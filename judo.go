@@ -50,6 +50,13 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
+	case "redis":
+		switch method {
+		case "sub":
+			sub = judoSub.NewRedisSub()
+		default:
+			return sub, errors.New("Invalid Parameters, method: " + method)
+		}
 	default:
 		return sub, errors.New("Invalid Protocol: " + protocol)
 	}
