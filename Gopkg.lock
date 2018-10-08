@@ -20,10 +20,22 @@
   version = "v1.4.0"
 
 [[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [".","internal","internal/consistenthash","internal/hashtag","internal/pool","internal/proto","internal/singleflight","internal/util"]
+  revision = "f3bba01df2026fc865f7782948845db9cf44cf23"
+  version = "v6.14.1"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["gogoproto","proto","protoc-gen-gogo/descriptor"]
   revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/nanomsg/mangos"
+  packages = ["protocol/req","transport/ipc"]
+  revision = "c289f0f3165d00720e9dcef856b52d799f0bb008"
+  version = "v1.4.0"
 
 [[projects]]
   name = "github.com/nats-io/go-nats"
@@ -69,12 +81,6 @@
 
 [[projects]]
   branch = "master"
-  name = "gitlab.com/ajithnn/judo"
-  packages = ["message"]
-  revision = "5a8a086cbbf7bf1fc09194c6d9487ae6fc8eaee0"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
   revision = "a200a19cb90b19de298170992778b1fda7217bd6"
@@ -82,12 +88,12 @@
 [[projects]]
   name = "nanomsg.org/go-mangos"
   packages = ["."]
-  revision = "c289f0f3165d00720e9dcef856b52d799f0bb008"
-  version = "v1.4.0"
+  revision = "41a23037e0d3df33c94236ef5841bf8ea6061267"
+  version = "v1.3.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f722055b0a277701d2dc0c337d10fb0ad53c692007a9e1aab3251d74ae794719"
+  inputs-digest = "0d528e36a77c388d8cd739fb5c0646408c4e0526844c3a6bb3e0055104ab921d"
   solver-name = "gps-cdcl"
   solver-version = 1

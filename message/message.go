@@ -1,6 +1,7 @@
 package message
 
 import (
+	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
 	"github.com/streadway/amqp"
@@ -50,6 +51,13 @@ type RawConnection interface {
 	ChanSubscribe(string, interface{}) (*nats.Subscription, error)
 	Close()
 	Subscribe(string, natsStream.MsgHandler, ...natsStream.SubscriptionOption) (natsStream.Subscription, error)
+}
+
+type RawClient interface {
+	Publish(string, interface{}) *gredis.IntCmd
+	Subscribe(...string) RawClient
+	Close() error
+	Channel() <-chan *gredis.Message
 }
 
 type AmqpRawMessage struct {
@@ -280,4 +288,58 @@ func (d NatsStreamRawConnection) Close() {
 	if d.Conn != nil {
 		d.Conn.Close()
 	}
+}
+
+type RedisRawMessage struct {
+	Message *gredis.Message
+}
+
+func (d RedisRawMessage) Ack(multiple bool) error {
+	return nil
+}
+
+func (d RedisRawMessage) Nack(multiple, requeue bool) error {
+	return nil
+}
+
+func (d RedisRawMessage) GetBody() []byte {
+	return []byte(d.Message.String())
+}
+
+func (d RedisRawMessage) SetBody(body []byte) RawMessage {
+	d.Message.Payload = string(body)
+	return d
+}
+
+func (d RedisRawMessage) GetReplyTo() string {
+	return ""
+}
+
+func (d RedisRawMessage) GetCorrelationId() string {
+	return ""
+}
+
+type RedisRawClient struct {
+	Client *gredis.Client
+	PubSub *gredis.PubSub
+}
+
+func (d RedisRawClient) Publish(subject string, msg interface{}) *gredis.IntCmd {
+	return d.Client.Publish(subject, msg)
+}
+
+func (d RedisRawClient) Subscribe(channels ...string) RawClient {
+	d.PubSub = d.Client.Subscribe(channels...)
+	return d
+}
+
+func (d RedisRawClient) Channel() <-chan *gredis.Message {
+	return d.PubSub.Channel()
+}
+
+func (d RedisRawClient) Close() error {
+	if d.Client != nil {
+		return d.Client.Close()
+	}
+	return nil
 }

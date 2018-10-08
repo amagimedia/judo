@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"github.com/amagimedia/judo/client"
 	judoMsg "github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/protocols/pub/redis"
 	judoReply "github.com/amagimedia/judo/protocols/reply"
+	nanoreq "github.com/amagimedia/judo/protocols/req/nano"
 	judoSub "github.com/amagimedia/judo/protocols/sub"
+	"github.com/amagimedia/judo/publisher"
 )
 
 func NewSubscriber(protocol, method string) (client.JudoClient, error) {
@@ -56,4 +59,36 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	})
 
 	return sub, nil
+}
+
+func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
+	// Switch on PubType
+	// Pass Config to Connect and get Publisher Object
+	// Return Publisher Object
+
+	var pub publisher.JudoPub
+	var err error
+
+	switch pubType + "-" + pubMethod {
+	case "redis-publish":
+		pub, err = redis.New()
+		if err != nil {
+			return pub, err
+		}
+	case "nano-req":
+		pub, err = nanoreq.New()
+		if err != nil {
+			return pub, err
+		}
+		/*
+			case "nats":
+				pub, err = nats.New()
+				if err != nil {
+					return pub, err
+				}
+		*/
+	default:
+		return nil, nil
+	}
+	return pub, nil
 }

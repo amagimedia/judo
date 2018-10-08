@@ -437,3 +437,101 @@ func TestNatsStreamRawWrapper(t *testing.T) {
 	wrapMessage.GetCorrelationId()
 
 }
+
+func TestRedisMessage(t *testing.T) {
+	fakeRawMessage := &mocks.RawMessage{}
+	fakeRawClient := &mocks.RawClient{}
+	fakeMessage := &message.RedisMessage{
+		fakeRawMessage,
+		fakeRawClient,
+		map[string]string{"protocol_type": "sub"},
+	}
+
+	cases := []struct {
+		name         string
+		propertyName string
+		propertyVal  string
+		msg          []byte
+		ack          []byte
+	}{
+		{
+			"set_property",
+			"protocol_type",
+			"sub",
+			[]byte(""),
+			[]byte(""),
+		},
+		{
+			"set_property",
+			"protocol_type",
+			"reply",
+			[]byte(""),
+			[]byte(""),
+		},
+		{
+			"get_property",
+			"random_string",
+			"never_returned",
+			[]byte(""),
+			[]byte(""),
+		},
+		{
+			"set_message",
+			"protocol_type",
+			"sub",
+			[]byte("MSG"),
+			[]byte("OK"),
+		},
+		{
+			"ack",
+			"protocol_type",
+			"reqrep",
+			[]byte("MSG"),
+			[]byte("OK"),
+		},
+		{
+			"nack",
+			"protocol_type",
+			"reqrep",
+			[]byte("MSG"),
+			[]byte("ERR"),
+		},
+	}
+
+	for _, c := range cases {
+		switch c.name {
+		case "set_property":
+			fakeMessage.SetProperty(c.propertyName, c.propertyVal)
+			if val, ok := fakeMessage.GetProperty(c.propertyName); !ok || val != c.propertyVal {
+				t.Error("Set Property failed to set approprate value")
+			}
+		case "get_property":
+			if val, ok := fakeMessage.GetProperty(c.propertyName); ok && val == c.propertyVal {
+				t.Error("Got Unset Property.")
+			}
+		case "set_message":
+			fakeRawMessage.On("SetBody", c.msg).Return(mocks.RawMessage{})
+			fakeRawMessage.On("GetBody").Return(c.msg)
+			_ = fakeMessage.SetMessage(c.msg)
+			if string(fakeMessage.GetMessage()) != string(c.msg) {
+				t.Error("Failed to Set Message body")
+			}
+		case "ack":
+			fakeRawClient.On("Send", c.ack).Return(nil).Once()
+			fakeMessage.SendAck(c.ack)
+		case "nack":
+			fakeRawClient.On("Send", c.ack).Return(nil).Once()
+			fakeMessage.SendNack(c.ack)
+		default:
+			t.Error("Unknown case")
+		}
+	}
+
+}
+
+func TestRedisRawWrapper(t *testing.T) {
+
+	wrapMessage := message.RedisRawMessage{}
+	wrapMessage.Ack(false)
+	wrapMessage.Nack(false, true)
+}

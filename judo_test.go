@@ -106,3 +106,37 @@ func TestCreateSubscriberSuccess(t *testing.T) {
 		}
 	}
 }
+
+func TestCreatePublisherSuccess(t *testing.T) {
+	cases := []struct {
+		protocol string
+		method   string
+	}{
+		{
+			"nano",
+			"req",
+		},
+		{
+			"redis",
+			"publish",
+		},
+	}
+
+	for _, c := range cases {
+		retVal, err := NewPublisher(c.protocol, c.method)
+		if err != nil {
+			t.Error("Unknown error while creating subscriber: ", err.Error())
+		}
+		retType := reflect.TypeOf(retVal)
+		switch retType.String() {
+		case "*nano.nanoReq":
+			if c.method != "req" && c.protocol != "nano" {
+				t.Error("Invalid type returned")
+			}
+		case "*redis.redisPub":
+			if c.method != "publish" && c.protocol != "redis" {
+				t.Error("Invalid type returned")
+			}
+		}
+	}
+}
