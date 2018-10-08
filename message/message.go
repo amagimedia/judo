@@ -39,7 +39,7 @@ type RawChannel interface {
 type RawSocket interface {
 	Recv() ([]byte, error)
 	Close() error
-	AddTransport(interface{})
+	AddTransport(mangos.Transport)
 	Dial(string) error
 	Listen(string) error
 	SetOption(string, interface{}) error
@@ -172,8 +172,8 @@ func (d NanoRawSocket) Close() error {
 	return nil
 }
 
-func (d NanoRawSocket) AddTransport(t interface{}) {
-	d.Socket.AddTransport(t.(mangos.Transport))
+func (d NanoRawSocket) AddTransport(t mangos.Transport) {
+	d.Socket.AddTransport(t)
 }
 
 func (d NanoRawSocket) SetOption(key string, val interface{}) error {

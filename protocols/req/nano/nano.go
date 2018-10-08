@@ -3,9 +3,10 @@ package nano
 import (
 	"fmt"
 	judoConfig "github.com/amagimedia/judo/config"
+	jmsg "github.com/amagimedia/judo/message"
 	"github.com/amagimedia/judo/publisher"
-	greq "github.com/nanomsg/mangos/protocol/req"
-	"github.com/nanomsg/mangos/transport/ipc"
+	greq "github.com/go-mangos/mangos/protocol/req"
+	"github.com/go-mangos/mangos/transport/ipc"
 	gomangos "nanomsg.org/go-mangos"
 	"time"
 )
@@ -45,7 +46,7 @@ func (c *Config) GetField(key string) string {
 }
 
 type nanoReq struct {
-	Socket gomangos.Socket
+	Socket jmsg.RawSocket
 }
 
 func (req *nanoReq) Connect(configs map[string]interface{}) error {

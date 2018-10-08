@@ -33,7 +33,7 @@
 
 [[projects]]
   name = "github.com/nanomsg/mangos"
-  packages = ["protocol/req","transport/ipc"]
+  packages = [".","protocol/req","transport/ipc"]
   revision = "c289f0f3165d00720e9dcef856b52d799f0bb008"
   version = "v1.4.0"
 
@@ -94,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0d528e36a77c388d8cd739fb5c0646408c4e0526844c3a6bb3e0055104ab921d"
+  inputs-digest = "60c1196bdfca36ee9518ff6ffe503bd1fe2cbb3647d7d147d44415020bcd5cb9"
   solver-name = "gps-cdcl"
   solver-version = 1
