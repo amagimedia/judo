@@ -303,7 +303,7 @@ func (d RedisRawMessage) Nack(multiple, requeue bool) error {
 }
 
 func (d RedisRawMessage) GetBody() []byte {
-	return []byte(d.Message.String())
+	return []byte(d.Message.Payload)
 }
 
 func (d RedisRawMessage) SetBody(body []byte) RawMessage {
