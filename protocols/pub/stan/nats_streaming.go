@@ -13,9 +13,6 @@ type Config struct {
 	Topic    string
 	Endpoint string
 	Cluster  string
-	User     string
-	Password string
-	Token    string
 	AckTime  int
 }
 
@@ -25,9 +22,6 @@ var natsSmap = map[string]string{
 	"endpoint": "Endpoint",
 	"cluster":  "Cluster",
 	"ack_time": "AckTime",
-	"user":     "User",
-	"password": "Password",
-	"token":    "Token",
 }
 
 func (c *Config) GetKeys() []string {
@@ -37,9 +31,6 @@ func (c *Config) GetKeys() []string {
 		"endpoint",
 		"cluster",
 		"ack_time",
-		"user",
-		"password",
-		"token",
 	}
 }
 
