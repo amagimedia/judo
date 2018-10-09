@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/amagimedia/judo/client"
 	judoMsg "github.com/amagimedia/judo/message"
-	"github.com/amagimedia/judo/protocols/pub/redis"
+	redispub "github.com/amagimedia/judo/protocols/pub/redis"
+	stanpub "github.com/amagimedia/judo/protocols/pub/stan"
 	judoReply "github.com/amagimedia/judo/protocols/reply"
 	nanoreq "github.com/amagimedia/judo/protocols/req/nano"
 	judoSub "github.com/amagimedia/judo/protocols/sub"
@@ -78,7 +79,7 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 
 	switch pubType + "-" + pubMethod {
 	case "redis-publish":
-		pub, err = redis.New()
+		pub, err = redispub.New()
 		if err != nil {
 			return pub, err
 		}
@@ -87,13 +88,11 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 		if err != nil {
 			return pub, err
 		}
-		/*
-			case "nats":
-				pub, err = nats.New()
-				if err != nil {
-					return pub, err
-				}
-		*/
+	case "nats-publish":
+		pub, err = stanpub.New()
+		if err != nil {
+			return pub, err
+		}
 	default:
 		return nil, nil
 	}

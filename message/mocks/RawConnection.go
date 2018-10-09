@@ -11,7 +11,7 @@ type RawConnection struct {
 }
 
 // ChanSubscribe provides a mock function with given fields: _a0, _a1
-func (_m RawConnection) ChanSubscribe(_a0 string, _a1 interface{}) (*nats.Subscription, error) {
+func (_m *RawConnection) ChanSubscribe(_a0 string, _a1 interface{}) (*nats.Subscription, error) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 *nats.Subscription
@@ -34,12 +34,12 @@ func (_m RawConnection) ChanSubscribe(_a0 string, _a1 interface{}) (*nats.Subscr
 }
 
 // Close provides a mock function with given fields:
-func (_m RawConnection) Close() {
+func (_m *RawConnection) Close() {
 	_m.Called()
 }
 
 // Publish provides a mock function with given fields: _a0, _a1
-func (_m RawConnection) Publish(_a0 string, _a1 []byte) error {
+func (_m *RawConnection) Publish(_a0 string, _a1 []byte) error {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 error
@@ -53,7 +53,7 @@ func (_m RawConnection) Publish(_a0 string, _a1 []byte) error {
 }
 
 // Subscribe provides a mock function with given fields: _a0, _a1, _a2
-func (_m RawConnection) Subscribe(_a0 string, _a1 stan.MsgHandler, _a2 ...stan.SubscriptionOption) (stan.Subscription, error) {
+func (_m *RawConnection) Subscribe(_a0 string, _a1 stan.MsgHandler, _a2 ...stan.SubscriptionOption) (stan.Subscription, error) {
 	_va := make([]interface{}, len(_a2))
 	for _i := range _a2 {
 		_va[_i] = _a2[_i]
