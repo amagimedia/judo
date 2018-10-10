@@ -111,16 +111,17 @@ func TestRedisSubscriber(t *testing.T) {
 				t.Error("Failed in verifying start method.")
 			}
 			called := false
-			fakeSubscriber.OnMessage(func(message.Message) {
+			fakeSubscriber.OnMessage(func(msg message.Message) {
 				called = true
 			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fakeClient.On("Channel").Return(func() <-chan *gredis.Message { return ch })
+			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]string, 0), nil))
 			_, err = fakeSubscriber.Start()
 			if err != nil {
 				t.Error("Failed in verifying start method.")
 			}
-			ch <- &gredis.Message{Payload: "Message"}
+			ch <- &gredis.Message{Payload: "Message_New"}
 			time.Sleep(time.Millisecond * 100)
 			if !called {
 				t.Error("Failed in verifying start method.")
@@ -137,8 +138,13 @@ func TestRedisSubscriber(t *testing.T) {
 				t.Error("Configure failed when not expected.")
 			}
 
+			fakeSubscriber.OnMessage(func(message.Message) {
+				return
+			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fakeClient.On("Channel").Return(make(<-chan *gredis.Message))
+			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]string, 0), nil))
+			fakeClient.On("Close").Return(nil)
 			_, err = fSubscriber.Start()
 			if err.Error() != c.retType.Error() {
 				t.Error("Start did not fail when expected")
@@ -157,8 +163,14 @@ func TestRedisSubscriber(t *testing.T) {
 				t.Error("Configure failed when not expected.")
 			}
 			rch := func() <-chan *gredis.Message { return ch }()
+
+			fSubscriber.OnMessage(func(message.Message) {
+				return
+			})
 			fClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fClient.On("Channel").Return(rch)
+			fClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult([]string{"aaaa"}, nil))
+			fClient.On("Close").Return(nil)
 			ec, err := fSubscriber.Start()
 			close(ch)
 			err = <-ec

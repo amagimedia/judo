@@ -40,6 +40,25 @@ func (_m *RawClient) Close() error {
 	return r0
 }
 
+// EvalSha provides a mock function with given fields: _a0, _a1, _a2
+func (_m *RawClient) EvalSha(_a0 string, _a1 []string, _a2 ...interface{}) *redis.Cmd {
+	var _ca []interface{}
+	_ca = append(_ca, _a0, _a1)
+	_ca = append(_ca, _a2...)
+	ret := _m.Called(_ca...)
+
+	var r0 *redis.Cmd
+	if rf, ok := ret.Get(0).(func(string, []string, ...interface{}) *redis.Cmd); ok {
+		r0 = rf(_a0, _a1, _a2...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*redis.Cmd)
+		}
+	}
+
+	return r0
+}
+
 // Publish provides a mock function with given fields: _a0, _a1
 func (_m *RawClient) Publish(_a0 string, _a1 interface{}) *redis.IntCmd {
 	ret := _m.Called(_a0, _a1)
@@ -50,6 +69,22 @@ func (_m *RawClient) Publish(_a0 string, _a1 interface{}) *redis.IntCmd {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*redis.IntCmd)
+		}
+	}
+
+	return r0
+}
+
+// ScriptLoad provides a mock function with given fields: _a0
+func (_m *RawClient) ScriptLoad(_a0 string) *redis.StringCmd {
+	ret := _m.Called(_a0)
+
+	var r0 *redis.StringCmd
+	if rf, ok := ret.Get(0).(func(string) *redis.StringCmd); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*redis.StringCmd)
 		}
 	}
 

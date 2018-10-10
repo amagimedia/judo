@@ -58,6 +58,8 @@ type RawClient interface {
 	Subscribe(...string) RawClient
 	Close() error
 	Channel() <-chan *gredis.Message
+	ScriptLoad(string) *gredis.StringCmd
+	EvalSha(string, []string, ...interface{}) *gredis.Cmd
 }
 
 type AmqpRawMessage struct {
@@ -335,6 +337,14 @@ func (d RedisRawClient) Subscribe(channels ...string) RawClient {
 
 func (d RedisRawClient) Channel() <-chan *gredis.Message {
 	return d.PubSub.Channel()
+}
+
+func (d RedisRawClient) EvalSha(sha1 string, keys []string, args ...interface{}) *gredis.Cmd {
+	return d.Client.EvalSha(sha1, keys, args...)
+}
+
+func (d RedisRawClient) ScriptLoad(script string) *gredis.StringCmd {
+	return d.Client.ScriptLoad(script)
 }
 
 func (d RedisRawClient) Close() error {
