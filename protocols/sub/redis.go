@@ -16,11 +16,12 @@ import (
 type redisConnector func(redisConfig) (jmsg.RawClient, error)
 
 var redismap = map[string]string{
-	"name":      "Name",
-	"topic":     "Topic",
-	"endpoint":  "Endpoint",
-	"password":  "Password",
-	"separator": "Separator",
+	"name":        "Name",
+	"topic":       "Topic",
+	"endpoint":    "Endpoint",
+	"password":    "Password",
+	"separator":   "Separator",
+	"persistence": "Persistence",
 }
 
 type RedisSubscriber struct {
@@ -33,11 +34,12 @@ type RedisSubscriber struct {
 }
 
 type redisConfig struct {
-	Name      string
-	Topic     string
-	Endpoint  string
-	Password  string
-	Separator string
+	Name        string
+	Topic       string
+	Endpoint    string
+	Password    string
+	Separator   string
+	Persistence bool
 }
 
 func (c redisConfig) GetKeys() []string {
@@ -47,6 +49,7 @@ func (c redisConfig) GetKeys() []string {
 		"endpoint",
 		"password",
 		"separator",
+		"persistence",
 	}
 }
 
@@ -55,6 +58,7 @@ func (c redisConfig) GetMandatoryKeys() []string {
 		"name",
 		"topic",
 		"endpoint",
+		"persistence",
 	}
 }
 
@@ -106,7 +110,10 @@ func (sub *RedisSubscriber) Start() (<-chan error, error) {
 
 	go sub.receive(errorChannel)
 
-	go sub.getMissingMessages()
+	// If persistence is true then retrieve older messages on restart.
+	if sub.redisConfig.Persistence {
+		go sub.getMissingMessages()
+	}
 
 	return errorChannel, err
 }
