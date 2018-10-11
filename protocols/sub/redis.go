@@ -5,23 +5,15 @@ import (
 	"github.com/amagimedia/judo/client"
 	judoConfig "github.com/amagimedia/judo/config"
 	jmsg "github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/scripts"
 	gredis "github.com/go-redis/redis"
 	"io/ioutil"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type redisConnector func(redisConfig) (jmsg.RawClient, error)
-
-const (
-	XPUBLISHSHA   = "e5b6a11ca0b32f7e7ee56347675966f77240a7bc"
-	XSUBSCRIBESHA = "7a888fa9085114a6f4a8f3074cda494b564eb494"
-)
-
-var scripts = map[string]string{
-	XPUBLISHSHA:   "local topic = ARGV[1];local msg = ARGV[2];local ts = ARGV[3];redis.call('PUBLISH', topic, msg);redis.call('ZADD', topic, ts, msg);return msg;",
-	XSUBSCRIBESHA: "local topic = ARGV[1];local from = ARGV[2];local to = ARGV[3];return redis.call('ZRANGEBYSCORE', topic, from, to);",
-}
 
 var redismap = map[string]string{
 	"name":      "Name",
@@ -122,12 +114,7 @@ func (sub *RedisSubscriber) Start() (<-chan error, error) {
 func (sub *RedisSubscriber) receive(ec chan error) {
 	recvChannel := sub.connection.Channel()
 	for msg := range recvChannel {
-		message := jmsg.RedisMessage{
-			jmsg.RedisRawMessage{msg},
-			sub.connection,
-			make(map[string]string),
-		}
-		sub.processChannel <- message
+		sub.processChannel <- sub.calcTimestamp(msg.Channel, msg.Pattern, msg.Payload)
 	}
 	ec <- fmt.Errorf("Receive channel closed, Subscription ended.")
 	sub.Close()
@@ -135,7 +122,6 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
-		sub.lastMessageTime = time.Now().UTC().Unix()
 		sub.callback(message)
 		err := sub.setLastTime()
 		if err != nil {
@@ -146,7 +132,7 @@ func (sub *RedisSubscriber) handleMessage(ec chan error) {
 }
 
 func (sub *RedisSubscriber) getMissingMessages() {
-	resp := sub.connection.EvalSha(XSUBSCRIBESHA, make([]string, 0), sub.redisConfig.Topic, sub.lastMessageTime, time.Now().Unix())
+	resp := sub.connection.EvalSha(scripts.XSUBSCRIBESHA, make([]string, 0), sub.redisConfig.Topic, sub.lastMessageTime, time.Now().Unix())
 	if resp.Err() != nil {
 		return
 	}
@@ -154,10 +140,15 @@ func (sub *RedisSubscriber) getMissingMessages() {
 	if err != nil {
 		return
 	}
-	for _, msg := range result.([]string) {
-		fmt.Println(jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{"", "", msg}}, sub.connection, make(map[string]string)})
-		sub.processChannel <- jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{"", "", msg}}, sub.connection, make(map[string]string)}
+	for _, msg := range result.([]interface{}) {
+		sub.processChannel <- sub.calcTimestamp("", "", msg.(string))
 	}
+}
+
+func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) jmsg.RedisMessage {
+	msgStrings := strings.Split(msg, "|")
+	sub.lastMessageTime, _ = strconv.ParseInt(msgStrings[0], 10, 64)
+	return jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{channel, pattern, strings.Join(msgStrings[1:], "|")}}, sub.connection, make(map[string]string)}
 }
 
 func (sub *RedisSubscriber) loadLastTime() {
