@@ -54,7 +54,8 @@ func (pub *redisPub) Connect(configs map[string]interface{}) error {
 	}
 
 	pub.Client = gredis.NewClient(&gredis.Options{
-		Addr: config.Host + ":" + config.Port,
+		Addr:     config.Host + ":" + config.Port,
+		Password: config.Password,
 	})
 
 	err = pub.loadRedisScripts()
