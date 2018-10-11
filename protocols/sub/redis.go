@@ -132,7 +132,7 @@ func (sub *RedisSubscriber) handleMessage(ec chan error) {
 }
 
 func (sub *RedisSubscriber) getMissingMessages() {
-	resp := sub.connection.EvalSha(scripts.XSUBSCRIBESHA, make([]string, 0), sub.redisConfig.Topic, sub.lastMessageTime, time.Now().Unix())
+	resp := sub.connection.EvalSha(scripts.XSUBSCRIBESHA, make([]string, 0), sub.redisConfig.Topic, sub.lastMessageTime)
 	if resp.Err() != nil {
 		return
 	}

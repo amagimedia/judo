@@ -116,7 +116,7 @@ func TestRedisSubscriber(t *testing.T) {
 			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fakeClient.On("Channel").Return(func() <-chan *gredis.Message { return ch })
-			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]interface{}, 0), nil))
+			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]interface{}, 0), nil))
 			_, err = fakeSubscriber.Start()
 			if err != nil {
 				t.Error("Failed in verifying start method.")
@@ -143,7 +143,7 @@ func TestRedisSubscriber(t *testing.T) {
 			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fakeClient.On("Channel").Return(make(<-chan *gredis.Message))
-			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]interface{}, 0), nil))
+			fakeClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult(make([]interface{}, 0), nil))
 			fakeClient.On("Close").Return(nil)
 			_, err = fSubscriber.Start()
 			if err.Error() != c.retType.Error() {
@@ -169,7 +169,7 @@ func TestRedisSubscriber(t *testing.T) {
 			})
 			fClient.On("Subscribe", mock.AnythingOfType("string")).Return(&gredis.PubSub{})
 			fClient.On("Channel").Return(rch)
-			fClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult([]interface{}{"aaaa"}, nil))
+			fClient.On("EvalSha", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(gredis.NewCmdResult([]interface{}{"aaaa"}, nil))
 			fClient.On("Close").Return(nil)
 			ec, err := fSubscriber.Start()
 			close(ch)
