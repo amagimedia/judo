@@ -5,7 +5,6 @@ import (
 	"github.com/amagimedia/judo/publisher"
 	"github.com/amagimedia/judo/scripts"
 	gredis "github.com/go-redis/redis"
-	"time"
 )
 
 type Config struct {
@@ -64,7 +63,7 @@ func (pub *redisPub) Connect(configs map[string]interface{}) error {
 }
 
 func (pub *redisPub) Publish(subject string, msg []byte) error {
-	errCap := pub.Client.EvalSha(scripts.XPUBLISHSHA, make([]string, 0), subject, string(msg), time.Now().Unix())
+	errCap := pub.Client.EvalSha(scripts.XPUBLISHSHA, []string{"{" + subject + "}.list", "{" + subject + "}.cntr"}, subject, string(msg))
 	return errCap.Err()
 }
 

@@ -1,11 +1,11 @@
 package scripts
 
 const (
-	XPUBLISHSHA   = "19139a75c1a4ac8df8887010e7e4d19033fcc747"
-	XSUBSCRIBESHA = "bafcf505307208399d76636af3b73f57b75b7407"
+	XPUBLISHSHA   = "abdd73e097fb2b8ee41723e654806b29acaecc84"
+	XSUBSCRIBESHA = "50cce0d2fec592ef7d1aa91fe17b71b26791cde3"
 )
 
 var SHAtoCode = map[string]string{
-	XPUBLISHSHA:   "local topic = ARGV[1];local ts = ARGV[3];local msg = ts .. '|' .. ARGV[2];redis.call('PUBLISH', topic, msg);redis.call('ZADD', topic, ts, msg);return msg;",
-	XSUBSCRIBESHA: "local topic = ARGV[1];local from = '(' .. ARGV[2];return redis.call('ZRANGEBYSCORE', topic, from, '+inf');",
+	XPUBLISHSHA:   "local topic = ARGV[1];local ts = redis.call(incrby,KEYS[2],1);local msg = ts .. '|' .. ARGV[2];redis.call('PUBLISH', topic, msg);redis.call('ZADD', KEYS[1], ts, msg);return msg;",
+	XSUBSCRIBESHA: "local topic = ARGV[1];local from = '(' .. ARGV[2];return redis.call('ZRANGEBYSCORE', KEYS[1], from, '+inf');",
 }

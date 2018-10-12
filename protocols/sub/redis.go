@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type redisConnector func(redisConfig) (jmsg.RawClient, error)
@@ -99,11 +98,19 @@ func (sub *RedisSubscriber) Start() (<-chan error, error) {
 	errorChannel := make(chan error)
 
 	sub.processChannel = make(chan jmsg.RedisMessage)
-	sub.loadLastTime()
+
+	loadErr := sub.loadLastTime()
 
 	sub.connection, err = sub.connector(sub.redisConfig)
 	if err != nil {
 		return errorChannel, err
+	}
+
+	for _, script := range scripts.SHAtoCode {
+		res := sub.connection.ScriptLoad(script)
+		if res.Err() != nil {
+			return errorChannel, res.Err()
+		}
 	}
 
 	go sub.handleMessage(errorChannel)
@@ -111,7 +118,7 @@ func (sub *RedisSubscriber) Start() (<-chan error, error) {
 	go sub.receive(errorChannel)
 
 	// If persistence is true then retrieve older messages on restart.
-	if sub.redisConfig.Persistence {
+	if sub.redisConfig.Persistence && loadErr == nil {
 		go sub.getMissingMessages()
 	}
 
@@ -139,7 +146,7 @@ func (sub *RedisSubscriber) handleMessage(ec chan error) {
 }
 
 func (sub *RedisSubscriber) getMissingMessages() {
-	resp := sub.connection.EvalSha(scripts.XSUBSCRIBESHA, make([]string, 0), sub.redisConfig.Topic, sub.lastMessageTime)
+	resp := sub.connection.EvalSha(scripts.XSUBSCRIBESHA, []string{"{" + sub.redisConfig.Topic + "}.list"}, sub.redisConfig.Topic, sub.lastMessageTime)
 	if resp.Err() != nil {
 		return
 	}
@@ -158,23 +165,21 @@ func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) jmsg.Red
 	return jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{channel, pattern, strings.Join(msgStrings[1:], "|")}}, sub.connection, make(map[string]string)}
 }
 
-func (sub *RedisSubscriber) loadLastTime() {
-	data, err := ioutil.ReadFile(".agent_msg_time")
+func (sub *RedisSubscriber) loadLastTime() error {
+	data, err := ioutil.ReadFile(".agent_msg_time." + sub.redisConfig.Topic)
 	if err != nil {
-		sub.lastMessageTime = time.Now().UTC().Unix()
-		return
+		return err
 	}
 	t, err := strconv.ParseInt(string(data), 10, 64)
 	if err != nil {
-		sub.lastMessageTime = time.Now().UTC().Unix()
-		return
+		return err
 	}
 	sub.lastMessageTime = t
-	return
+	return nil
 }
 
 func (sub *RedisSubscriber) setLastTime() error {
-	err := ioutil.WriteFile(".agent_msg_time", []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
+	err := ioutil.WriteFile(".agent_msg_time."+sub.redisConfig.Topic, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
 	if err != nil {
 		return err
 	}
