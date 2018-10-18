@@ -510,7 +510,7 @@ func TestRedisMessage(t *testing.T) {
 				t.Error("Got Unset Property.")
 			}
 		case "set_message":
-			fakeRawMessage.On("SetBody", c.msg).Return(mocks.RawMessage{})
+			fakeRawMessage.On("SetBody", c.msg).Return(fakeRawMessage)
 			fakeRawMessage.On("GetBody").Return(c.msg)
 			_ = fakeMessage.SetMessage(c.msg)
 			if string(fakeMessage.GetMessage()) != string(c.msg) {
@@ -518,9 +518,11 @@ func TestRedisMessage(t *testing.T) {
 			}
 		case "ack":
 			fakeRawClient.On("Send", c.ack).Return(nil).Once()
+			fakeRawMessage.On("GetBody").Return([]byte("OK"))
 			fakeMessage.SendAck(c.ack)
 		case "nack":
 			fakeRawClient.On("Send", c.ack).Return(nil).Once()
+			fakeRawMessage.On("GetBody").Return([]byte("OK"))
 			fakeMessage.SendNack(c.ack)
 		default:
 			t.Error("Unknown case")

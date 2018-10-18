@@ -28,7 +28,7 @@ type RedisSubscriber struct {
 	connection jmsg.RawClient //gredis.Client
 	redisConfig
 	callback        func(jmsg.Message)
-	processChannel  chan jmsg.RedisMessage
+	processChannel  chan *jmsg.RedisMessage
 	lastMessageTime int64
 }
 
@@ -97,7 +97,7 @@ func (sub *RedisSubscriber) Start() (<-chan error, error) {
 	var err error
 	errorChannel := make(chan error)
 
-	sub.processChannel = make(chan jmsg.RedisMessage)
+	sub.processChannel = make(chan *jmsg.RedisMessage)
 
 	loadErr := sub.loadLastTime()
 
@@ -137,9 +137,11 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		sub.callback(message)
-		err := sub.setLastTime()
-		if err != nil {
-			break
+		if val, ok := message.GetProperty("ack"); ok && val == "OK" {
+			err := sub.setLastTime()
+			if err != nil {
+				break
+			}
 		}
 	}
 	sub.Close()
@@ -159,10 +161,10 @@ func (sub *RedisSubscriber) getMissingMessages() {
 	}
 }
 
-func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) jmsg.RedisMessage {
+func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) *jmsg.RedisMessage {
 	msgStrings := strings.Split(msg, "|")
 	sub.lastMessageTime, _ = strconv.ParseInt(msgStrings[0], 10, 64)
-	return jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{channel, pattern, strings.Join(msgStrings[1:], "|")}}, sub.connection, make(map[string]string)}
+	return &jmsg.RedisMessage{jmsg.RedisRawMessage{&gredis.Message{channel, pattern, strings.Join(msgStrings[1:], "|")}}, sub.connection, make(map[string]string)}
 }
 
 func (sub *RedisSubscriber) loadLastTime() error {

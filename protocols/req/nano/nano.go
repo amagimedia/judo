@@ -78,7 +78,7 @@ func (req *nanoReq) Connect(configs map[string]interface{}) error {
 	return nil
 }
 
-func (req *nanoReq) Publish(subject string, msg []byte) error {
+func (req *nanoReq) Publish(_ string, msg []byte) error {
 	err := req.Socket.Send(msg)
 	if err != nil {
 		return err

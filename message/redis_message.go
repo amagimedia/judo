@@ -6,7 +6,7 @@ type RedisMessage struct {
 	Properties map[string]string
 }
 
-func (m RedisMessage) GetProperty(key string) (string, bool) {
+func (m *RedisMessage) GetProperty(key string) (string, bool) {
 	if val, ok := m.Properties[key]; ok {
 		return val, ok
 	} else {
@@ -14,24 +14,26 @@ func (m RedisMessage) GetProperty(key string) (string, bool) {
 	}
 }
 
-func (m RedisMessage) SetProperty(key string, val string) {
+func (m *RedisMessage) SetProperty(key string, val string) {
 	m.Properties[key] = val
 }
 
-func (m RedisMessage) GetMessage() []byte {
+func (m *RedisMessage) GetMessage() []byte {
 	return m.RawMessage.GetBody()
 }
 
-func (m RedisMessage) SetMessage(msg []byte) Message {
+func (m *RedisMessage) SetMessage(msg []byte) Message {
 	rawmsg := m.RawMessage.SetBody(msg)
 	m.RawMessage = rawmsg
 	return m
 }
 
-func (m RedisMessage) SendAck(ackMsg ...[]byte) {
+func (m *RedisMessage) SendAck(ackMsg ...[]byte) {
+	m.SetProperty("ack", "OK")
 	return
 }
 
-func (m RedisMessage) SendNack(ackMessage ...[]byte) {
+func (m *RedisMessage) SendNack(ackMessage ...[]byte) {
+	m.SetProperty("ack", "NOK")
 	return
 }
