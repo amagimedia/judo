@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"crypto/tls"
+
 	judoConfig "github.com/amagimedia/judo/config"
 	"github.com/amagimedia/judo/publisher"
 	"github.com/amagimedia/judo/scripts"
@@ -12,10 +14,11 @@ type Config struct {
 	Port     string
 	Password string
 	DB       int
+	Tls      bool
 }
 
 func (c *Config) GetKeys() []string {
-	return []string{"host", "port", "password", "db"}
+	return []string{"host", "port", "password", "db", "tls"}
 }
 
 func (c *Config) GetMandatoryKeys() []string {
@@ -32,6 +35,8 @@ func (c *Config) GetField(key string) string {
 		return "Password"
 	case "db":
 		return "DB"
+	case "tls":
+		return "Tls"
 	default:
 		return ""
 	}
@@ -52,10 +57,22 @@ func (pub *redisPub) Connect(configs map[string]interface{}) error {
 		return err
 	}
 
-	pub.Client = gredis.NewClient(&gredis.Options{
-		Addr:     config.Host + ":" + config.Port,
-		Password: config.Password,
-	})
+	if config.Tls {
+
+		pub.Client = gredis.NewClient(&gredis.Options{
+			Addr:      config.Host + ":" + config.Port,
+			Password:  config.Password,
+			TLSConfig: &tls.Config{},
+		})
+
+	} else {
+
+		pub.Client = gredis.NewClient(&gredis.Options{
+			Addr:     config.Host + ":" + config.Port,
+			Password: config.Password,
+		})
+
+	}
 
 	err = pub.loadRedisScripts()
 

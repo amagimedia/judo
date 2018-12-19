@@ -1,6 +1,7 @@
 package sub
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/amagimedia/judo/client"
 	judoConfig "github.com/amagimedia/judo/config"
@@ -19,6 +20,7 @@ var redismap = map[string]string{
 	"topic":       "Topic",
 	"endpoint":    "Endpoint",
 	"password":    "Password",
+	"tls":         "Tls",
 	"separator":   "Separator",
 	"persistence": "Persistence",
 }
@@ -37,6 +39,7 @@ type redisConfig struct {
 	Topic       string
 	Endpoint    string
 	Password    string
+	Tls         bool
 	Separator   string
 	Persistence bool
 }
@@ -47,6 +50,7 @@ func (c redisConfig) GetKeys() []string {
 		"topic",
 		"endpoint",
 		"password",
+		"tls",
 		"separator",
 		"persistence",
 	}
@@ -189,10 +193,23 @@ func (sub *RedisSubscriber) setLastTime() error {
 }
 
 func redisConnect(cfg redisConfig) (jmsg.RawClient, error) {
-	redisClient := gredis.NewClient(&gredis.Options{
-		Addr:     cfg.Endpoint,
-		Password: cfg.Password,
-	})
+	var redisClient *gredis.Client
+	if cfg.Tls {
+
+		redisClient = gredis.NewClient(&gredis.Options{
+			Addr:      cfg.Endpoint,
+			Password:  cfg.Password,
+			TLSConfig: &tls.Config{},
+		})
+
+	} else {
+
+		redisClient = gredis.NewClient(&gredis.Options{
+			Addr:     cfg.Endpoint,
+			Password: cfg.Password,
+		})
+
+	}
 
 	return jmsg.RedisRawClient{redisClient, redisClient.Subscribe(cfg.Topic)}, nil
 }
