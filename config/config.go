@@ -51,6 +51,10 @@ func (c ConfigHelper) set(key string, val interface{}) error {
 		if field.CanSet() {
 			field.SetBool(val.(bool))
 		}
+	case float64:
+		if field.CanSet() {
+			field.SetFloat(val.(float64))
+		}
 	case nil:
 		if field.CanSet() {
 			field.Set(reflect.ValueOf(val.(amqp.Table)))

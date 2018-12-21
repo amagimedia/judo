@@ -16,7 +16,7 @@ type Config struct {
 	Topic     string
 	Endpoint  string
 	Separator string
-	Timeout   int
+	Timeout   float64
 }
 
 var nanomap = map[string]string{
