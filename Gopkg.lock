@@ -8,14 +8,26 @@
   version = "v0.4.7"
 
 [[projects]]
+  name = "github.com/bitly/go-simplejson"
+  packages = ["."]
+  revision = "aabad6e819789e569bd6aabf444c935aa9ba1e44"
+  version = "v0.5.0"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
 
 [[projects]]
+  name = "github.com/garyburd/redigo"
+  packages = ["internal","redis"]
+  revision = "a69d19351219b6dd56f274f96d85a7014a2ec34e"
+  version = "v1.6.0"
+
+[[projects]]
   name = "github.com/go-mangos/mangos"
-  packages = ["protocol/rep","protocol/sub","transport/ipc","transport/tcp"]
+  packages = ["protocol/rep","protocol/req","protocol/sub","transport/ipc","transport/tcp"]
   revision = "c289f0f3165d00720e9dcef856b52d799f0bb008"
   version = "v1.4.0"
 
@@ -32,10 +44,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/nanomsg/mangos"
-  packages = [".","protocol/req","transport/ipc"]
-  revision = "c289f0f3165d00720e9dcef856b52d799f0bb008"
-  version = "v1.4.0"
+  branch = "master"
+  name = "github.com/jrallison/go-workers"
+  packages = ["."]
+  revision = "dbf81d0b75bbe2fd90ef66a07643dd70cb42a88a"
 
 [[projects]]
   name = "github.com/nats-io/go-nats"
@@ -94,6 +106,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "60c1196bdfca36ee9518ff6ffe503bd1fe2cbb3647d7d147d44415020bcd5cb9"
+  inputs-digest = "09c4f2369971a96a6c21c47ec49fdac3f0e67c104313f5ee7e738ccff6fdf1cf"
   solver-name = "gps-cdcl"
   solver-version = 1

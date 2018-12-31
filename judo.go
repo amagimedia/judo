@@ -3,9 +3,11 @@ package judo
 import (
 	"errors"
 	"fmt"
+
 	"github.com/amagimedia/judo/client"
 	judoMsg "github.com/amagimedia/judo/message"
 	redispub "github.com/amagimedia/judo/protocols/pub/redis"
+	sidekiqpub "github.com/amagimedia/judo/protocols/pub/sidekiq"
 	stanpub "github.com/amagimedia/judo/protocols/pub/stan"
 	judoReply "github.com/amagimedia/judo/protocols/reply"
 	nanoreq "github.com/amagimedia/judo/protocols/req/nano"
@@ -80,6 +82,11 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 	switch pubType + "-" + pubMethod {
 	case "redis-publish":
 		pub, err = redispub.New()
+		if err != nil {
+			return pub, err
+		}
+	case "sidekiq-publish":
+		pub, err = sidekiqpub.New()
 		if err != nil {
 			return pub, err
 		}
