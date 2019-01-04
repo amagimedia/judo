@@ -19,7 +19,7 @@ type Config struct {
 }
 
 func (c *Config) GetKeys() []string {
-	return []string{"endpoint", "password", "db"}
+	return []string{"endpoint", "password", "db", "queue", "worker", "job"}
 }
 
 func (c *Config) GetMandatoryKeys() []string {
@@ -34,6 +34,12 @@ func (c *Config) GetField(key string) string {
 		return "Password"
 	case "db":
 		return "DB"
+	case "queue":
+		return "Queue"
+	case "worker":
+		return "Worker"
+	case "job":
+		return "Job"
 	default:
 		return ""
 	}
