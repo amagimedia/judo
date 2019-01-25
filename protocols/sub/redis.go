@@ -42,6 +42,7 @@ type redisConfig struct {
 	Tls         bool
 	Separator   string
 	Persistence bool
+	FileName    string
 }
 
 func (c redisConfig) GetKeys() []string {
@@ -83,6 +84,7 @@ func (sub *RedisSubscriber) Configure(config map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	sub.redisConfig.FileName = strings.Replace(sub.redisConfig.Topic, "/", "", -1)
 
 	return err
 }
@@ -172,7 +174,7 @@ func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) *jmsg.Re
 }
 
 func (sub *RedisSubscriber) loadLastTime() error {
-	data, err := ioutil.ReadFile(".agent_msg_time." + sub.redisConfig.Topic)
+	data, err := ioutil.ReadFile(".agent_msg_time." + sub.redisConfig.FileName)
 	if err != nil {
 		return err
 	}
@@ -185,7 +187,7 @@ func (sub *RedisSubscriber) loadLastTime() error {
 }
 
 func (sub *RedisSubscriber) setLastTime() error {
-	err := ioutil.WriteFile(".agent_msg_time."+sub.redisConfig.Topic, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
+	err := ioutil.WriteFile(".agent_msg_time."+sub.redisConfig.FileName, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
 	if err != nil {
 		return err
 	}
