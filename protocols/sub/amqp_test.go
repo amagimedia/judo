@@ -11,6 +11,7 @@ import (
 )
 
 func TestAmqpSubscriber(t *testing.T) {
+	var called bool
 	fakeChannel := &mocks.RawChannel{}
 	connector := func(c config.Config) (message.RawChannel, error) {
 		return fakeChannel, nil
@@ -361,7 +362,7 @@ func TestAmqpSubscriber(t *testing.T) {
 			if err != nil {
 				t.Error("Error in Configure", err.Error())
 			}
-			called := false
+			called = false
 			fakeSubscriber.OnMessage(func(msg message.Message) {
 				called = true
 			})
@@ -390,7 +391,7 @@ func TestAmqpSubscriber(t *testing.T) {
 			if err != nil {
 				t.Error("Error in Configure", err.Error())
 			}
-			called := false
+			called = false
 			fakeSubscriber.OnMessage(func(msg message.Message) {
 				called = true
 			})
