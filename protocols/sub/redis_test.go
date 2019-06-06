@@ -2,8 +2,8 @@ package sub
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/message"
-	"github.com/amagimedia/judo/message/mocks"
+	"github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/message/mocks"
 	gredis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/mock"
 	"testing"

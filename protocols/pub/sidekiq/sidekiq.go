@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	judoConfig "github.com/amagimedia/judo/config"
-	"github.com/amagimedia/judo/publisher"
+	judoConfig "github.com/amagimedia/judo/v2/config"
+	"github.com/amagimedia/judo/v2/publisher"
 	workers "github.com/jrallison/go-workers"
 )
 
