@@ -68,9 +68,8 @@ type RawPubnubClient interface {
 	FetchHistory(string, bool, int64, bool, int) ([]*pubnub.PNMessage, error)
 	Publish(string, []byte) error
 	Subscribe(string)
-	Destroy()
-	AddListener(listener *pubnub.Listener)
-	GetListeners() map[*pubnub.Listener]bool
+	Destroy(string)
+	GetListener() *pubnub.Listener
 }
 
 type AmqpRawMessage struct {
@@ -422,7 +421,8 @@ func (d PubnubRawMessage) GetTimetoken() int64 {
 }
 
 type PubnubRawClient struct {
-	Client *pubnub.PubNub
+	Client   *pubnub.PubNub
+	Listener *pubnub.Listener
 }
 
 func (c PubnubRawClient) FetchHistory(topic string, includeTime bool, lastTime int64, reverse bool, count int) ([]*pubnub.PNMessage, error) {
@@ -459,19 +459,20 @@ func (c PubnubRawClient) Publish(topic string, msg []byte) error {
 }
 
 func (c PubnubRawClient) Subscribe(topic string) {
+	c.Client.AddListener(c.Listener)
+
 	c.Client.Subscribe().
 		Channels([]string{topic}).
 		Execute()
 }
 
-func (c PubnubRawClient) Destroy() {
-	c.Client.Destroy()
+func (c PubnubRawClient) Destroy(topic string) {
+	c.Client.Unsubscribe().
+		Channels([]string{topic}).
+		Execute()
+
 }
 
-func (c PubnubRawClient) AddListener(listener *pubnub.Listener) {
-	c.Client.AddListener(listener)
-}
-
-func (c PubnubRawClient) GetListeners() map[*pubnub.Listener]bool {
-	return c.Client.GetListeners()
+func (c PubnubRawClient) GetListener() *pubnub.Listener {
+	return c.Listener
 }

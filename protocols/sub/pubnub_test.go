@@ -108,6 +108,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			}
 		case "success-start":
 			ch := make(chan *pubnub.PNMessage)
+			st := make(chan *pubnub.PNStatus)
 			err := fakeSubscriber.Configure(c.config)
 			if err != nil {
 				t.Error("Failed in verifying start method.")
@@ -117,19 +118,20 @@ func TestPubnubSubscriber(t *testing.T) {
 				called = true
 			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(nil)
-			fakeClient.On("GetListeners").Return(map[*pubnub.Listener]bool{&pubnub.Listener{Message: ch}: true})
+			fakeClient.On("GetListener").Return(&pubnub.Listener{Message: ch, Status: st})
 			fakeClient.On("FetchHistory", mock.AnythingOfType("string"), mock.AnythingOfType("bool"), mock.AnythingOfType("int64"), mock.AnythingOfType("bool"), mock.AnythingOfType("int")).Return(make([]*pubnub.PNMessage, 0))
-			fakeClient.On("Destroy").Return(nil)
+			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
 			_, err = fakeSubscriber.Start()
 			if err != nil {
 				t.Error("Failed in verifying start method.")
 			}
+			st <- &pubnub.PNStatus{Category: pubnub.PNConnectedCategory}
 			ch <- &pubnub.PNMessage{Message: map[string]interface{}{"msg": "Message_New"}, Timetoken: time.Now().UTC().UnixNano()}
 			time.Sleep(time.Millisecond * 100)
 			if !called {
 				t.Error("Failed in verifying start method.")
 			}
-			fakeClient.On("Destroy").Return(nil)
+			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
 			fakeSubscriber.Close()
 		case "dial-err":
 			connector := func(cfg pubnubConfig) (message.RawPubnubClient, error) {
@@ -146,7 +148,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			})
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(nil)
 			fakeClient.On("FetchHistory", mock.AnythingOfType("string"), mock.AnythingOfType("bool"), mock.AnythingOfType("int64"), mock.AnythingOfType("bool"), mock.AnythingOfType("int")).Return(make([]*pubnub.PNMessage, 0))
-			fakeClient.On("Destroy").Return(nil)
+			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
 			_, err = fSubscriber.Start()
 			if err.Error() != c.retType.Error() {
 				t.Error("Start did not fail when expected")
@@ -154,6 +156,7 @@ func TestPubnubSubscriber(t *testing.T) {
 		case "recv-err":
 			fClient := &mocks.PubnubRawClient{}
 			ch := make(chan *pubnub.PNMessage)
+			st := make(chan *pubnub.PNStatus)
 			cr := func(cfg pubnubConfig) (message.RawPubnubClient, error) {
 				return fClient, nil
 			}
@@ -169,10 +172,11 @@ func TestPubnubSubscriber(t *testing.T) {
 				return
 			})
 			fClient.On("Subscribe", mock.AnythingOfType("string")).Return(nil)
-			fClient.On("GetListeners").Return(map[*pubnub.Listener]bool{&pubnub.Listener{Message: ch}: true})
+			fClient.On("GetListener").Return(&pubnub.Listener{Message: ch, Status: st})
 			fClient.On("FetchHistory", mock.AnythingOfType("string"), mock.AnythingOfType("bool"), mock.AnythingOfType("int64"), mock.AnythingOfType("bool"), mock.AnythingOfType("int")).Return(make([]*pubnub.PNMessage, 0))
-			fClient.On("Destroy").Return(nil)
+			fClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
 			ec, err := fSubscriber.Start()
+			st <- &pubnub.PNStatus{Category: pubnub.PNConnectedCategory}
 			close(ch)
 			err = <-ec
 			if err.Error() != c.retType.Error() {

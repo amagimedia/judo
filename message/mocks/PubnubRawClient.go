@@ -10,8 +10,8 @@ type PubnubRawClient struct {
 }
 
 // Close provides a mock function with given fields:
-func (_m *PubnubRawClient) Destroy() {
-	_m.Called()
+func (_m *PubnubRawClient) Destroy(_a0 string) {
+	_m.Called(_a0)
 }
 
 // EvalSha provides a mock function with given fields: _a0, _a1, _a2
@@ -25,7 +25,6 @@ func (_m *PubnubRawClient) FetchHistory(_a0 string, _a1 bool, _a2 int64, _a3 boo
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*pubnub.PNMessage)
-			r1 = ret.Get(0).(error)
 		}
 	}
 
@@ -76,15 +75,15 @@ func (_m *PubnubRawClient) Subscribe(_a0 string) {
 	return
 }
 
-func (_m *PubnubRawClient) GetListeners() map[*pubnub.Listener]bool {
+func (_m *PubnubRawClient) GetListener() *pubnub.Listener {
 	ret := _m.Called()
 
-	var r0 map[*pubnub.Listener]bool
-	if rf, ok := ret.Get(0).(func() map[*pubnub.Listener]bool); ok {
+	var r0 *pubnub.Listener
+	if rf, ok := ret.Get(0).(func() *pubnub.Listener); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[*pubnub.Listener]bool)
+			r0 = ret.Get(0).(*pubnub.Listener)
 		}
 	}
 

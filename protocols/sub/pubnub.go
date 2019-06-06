@@ -79,7 +79,7 @@ func (sub *PubnubSubscriber) Configure(config map[string]interface{}) error {
 }
 
 func (sub *PubnubSubscriber) Close() {
-	sub.connection.Destroy()
+	sub.connection.Destroy(sub.pubnubConfig.Topic)
 }
 
 func (sub *PubnubSubscriber) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
@@ -88,7 +88,6 @@ func (sub *PubnubSubscriber) OnMessage(callback func(msg jmsg.Message)) client.J
 }
 
 func (sub *PubnubSubscriber) Start() (<-chan error, error) {
-
 	var err error
 	errorChannel := make(chan error)
 
@@ -101,11 +100,12 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 		return errorChannel, err
 	}
 
-	go sub.handleMessage(errorChannel)
-
 	go sub.receive(errorChannel)
 
-	// If persistence is true then retrieve older messages on restart.
+	sub.connection.Subscribe(sub.pubnubConfig.Topic)
+
+	go sub.handleMessage(errorChannel)
+
 	if sub.pubnubConfig.Persistence && loadErr == nil {
 		go sub.getMissingMessages()
 	}
@@ -114,15 +114,28 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 }
 
 func (sub *PubnubSubscriber) receive(ec chan error) {
-	var recvChannel chan *pubnub.PNMessage
-	for listener, _ := range sub.connection.GetListeners() {
-		recvChannel = listener.Message
-	}
-	for msg := range recvChannel {
-		sub.processChannel <- sub.calcTimestamp(msg.Timetoken, msg.Message)
+	listener := sub.connection.GetListener()
+	for {
+		select {
+		case status := <-listener.Status:
+			switch status.Category {
+			case pubnub.PNConnectedCategory:
+				for message := range listener.Message {
+					sub.processChannel <- sub.calcTimestamp(message.Timetoken, message.Message)
+					err := sub.setLastTime()
+					if err != nil {
+						break
+					}
+				}
+				ec <- fmt.Errorf("Receive channel closed, Subscription ended.")
+				sub.Close()
+				return
+			}
+		}
 	}
 	ec <- fmt.Errorf("Receive channel closed, Subscription ended.")
 	sub.Close()
+	return
 }
 
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
@@ -187,10 +200,7 @@ func (sub *PubnubSubscriber) setLastTime() error {
 func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config := pubnub.NewConfig()
 	config.SubscribeKey = cfg.SubscribeKey
-	pubnubClient := pubnub.NewPubNub(config)
-	listener := pubnub.NewListener()
+	config.PublishKey = "pub-c-fd0b26c5-1fce-4575-a586-7d1791502f66"
 
-	pubnubClient.AddListener(listener)
-
-	return jmsg.PubnubRawClient{pubnubClient}, nil
+	return jmsg.PubnubRawClient{Client: pubnub.NewPubNub(config), Listener: pubnub.NewListener()}, nil
 }
