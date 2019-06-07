@@ -6,6 +6,7 @@ import (
 
 	"github.com/amagimedia/judo/v2/client"
 	judoMsg "github.com/amagimedia/judo/v2/message"
+	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
 	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
 	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
 	stanpub "github.com/amagimedia/judo/v2/protocols/pub/stan"
@@ -104,6 +105,11 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 		}
 	case "nats-publish":
 		pub, err = stanpub.New()
+		if err != nil {
+			return pub, err
+		}
+	case "pubnub-publish":
+		pub, err = pubnubPub.New()
 		if err != nil {
 			return pub, err
 		}

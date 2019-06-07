@@ -200,7 +200,6 @@ func (sub *PubnubSubscriber) setLastTime() error {
 func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config := pubnub.NewConfig()
 	config.SubscribeKey = cfg.SubscribeKey
-	config.PublishKey = "pub-c-fd0b26c5-1fce-4575-a586-7d1791502f66"
 
 	return jmsg.PubnubRawClient{Client: pubnub.NewPubNub(config), Listener: pubnub.NewListener()}, nil
 }
