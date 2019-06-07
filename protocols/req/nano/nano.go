@@ -2,9 +2,9 @@ package nano
 
 import (
 	"fmt"
-	judoConfig "github.com/amagimedia/judo/config"
-	jmsg "github.com/amagimedia/judo/message"
-	"github.com/amagimedia/judo/publisher"
+	judoConfig "github.com/amagimedia/judo/v2/config"
+	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/publisher"
 	greq "github.com/go-mangos/mangos/protocol/req"
 	"github.com/go-mangos/mangos/transport/ipc"
 	gomangos "nanomsg.org/go-mangos"

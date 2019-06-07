@@ -2,8 +2,8 @@ package reply
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/message"
-	"github.com/amagimedia/judo/message/mocks"
+	"github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/message/mocks"
 	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"

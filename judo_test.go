@@ -64,6 +64,14 @@ func TestCreateSubscriberSuccess(t *testing.T) {
 			"nats-streaming",
 			"sub",
 		},
+		{
+			"redis",
+			"sub",
+		},
+		{
+			"pubnub",
+			"sub",
+		},
 	}
 
 	for _, c := range cases {
@@ -99,6 +107,14 @@ func TestCreateSubscriberSuccess(t *testing.T) {
 			}
 		case "*sub.NatsStreamSubscriber":
 			if c.protocol != "nats-streaming" && c.method != "sub" {
+				t.Fail()
+			}
+		case "*sub.RedisSubscriber":
+			if c.protocol != "redis" && c.method != "sub" {
+				t.Fail()
+			}
+		case "*sub.PubnubSubscriber":
+			if c.protocol != "pubnub" && c.method != "sub" {
 				t.Fail()
 			}
 		default:

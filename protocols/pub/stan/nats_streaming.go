@@ -2,8 +2,8 @@ package stan
 
 import (
 	"fmt"
-	judoConfig "github.com/amagimedia/judo/config"
-	"github.com/amagimedia/judo/publisher"
+	judoConfig "github.com/amagimedia/judo/v2/config"
+	"github.com/amagimedia/judo/v2/publisher"
 	gstan "github.com/nats-io/go-nats-streaming"
 	"time"
 )

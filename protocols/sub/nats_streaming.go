@@ -2,9 +2,9 @@ package sub
 
 import (
 	"fmt"
-	"github.com/amagimedia/judo/client"
-	judoConfig "github.com/amagimedia/judo/config"
-	jmsg "github.com/amagimedia/judo/message"
+	"github.com/amagimedia/judo/v2/client"
+	judoConfig "github.com/amagimedia/judo/v2/config"
+	jmsg "github.com/amagimedia/judo/v2/message"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
 

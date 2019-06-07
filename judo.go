@@ -4,15 +4,16 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/amagimedia/judo/client"
-	judoMsg "github.com/amagimedia/judo/message"
-	redispub "github.com/amagimedia/judo/protocols/pub/redis"
-	sidekiqpub "github.com/amagimedia/judo/protocols/pub/sidekiq"
-	stanpub "github.com/amagimedia/judo/protocols/pub/stan"
-	judoReply "github.com/amagimedia/judo/protocols/reply"
-	nanoreq "github.com/amagimedia/judo/protocols/req/nano"
-	judoSub "github.com/amagimedia/judo/protocols/sub"
-	"github.com/amagimedia/judo/publisher"
+	"github.com/amagimedia/judo/v2/client"
+	judoMsg "github.com/amagimedia/judo/v2/message"
+	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
+	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
+	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
+	stanpub "github.com/amagimedia/judo/v2/protocols/pub/stan"
+	judoReply "github.com/amagimedia/judo/v2/protocols/reply"
+	nanoreq "github.com/amagimedia/judo/v2/protocols/req/nano"
+	judoSub "github.com/amagimedia/judo/v2/protocols/sub"
+	"github.com/amagimedia/judo/v2/publisher"
 )
 
 func NewSubscriber(protocol, method string) (client.JudoClient, error) {
@@ -60,6 +61,13 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
+	case "pubnub":
+		switch method {
+		case "sub":
+			sub = judoSub.NewPubnubSub()
+		default:
+			return sub, errors.New("Invalid Parameters, method: " + method)
+		}
 	default:
 		return sub, errors.New("Invalid Protocol: " + protocol)
 	}
@@ -97,6 +105,11 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 		}
 	case "nats-publish":
 		pub, err = stanpub.New()
+		if err != nil {
+			return pub, err
+		}
+	case "pubnub-publish":
+		pub, err = pubnubPub.New()
 		if err != nil {
 			return pub, err
 		}

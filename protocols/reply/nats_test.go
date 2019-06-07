@@ -2,8 +2,8 @@ package reply
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/message"
-	"github.com/amagimedia/judo/message/mocks"
+	"github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/message/mocks"
 	nats "github.com/nats-io/go-nats"
 	"github.com/stretchr/testify/mock"
 	"testing"

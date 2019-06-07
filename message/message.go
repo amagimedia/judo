@@ -4,6 +4,7 @@ import (
 	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
+	pubnub "github.com/pubnub/go"
 	"github.com/streadway/amqp"
 	mangos "nanomsg.org/go-mangos"
 )
@@ -24,6 +25,7 @@ type RawMessage interface {
 	SetBody([]byte) RawMessage
 	GetReplyTo() string
 	GetCorrelationId() string
+	GetTimetoken() int64
 }
 
 type RawChannel interface {
@@ -62,6 +64,14 @@ type RawClient interface {
 	EvalSha(string, []string, ...interface{}) *gredis.Cmd
 }
 
+type RawPubnubClient interface {
+	FetchHistory(string, bool, int64, bool, int) ([]*pubnub.PNMessage, error)
+	Publish(string, []byte) error
+	Subscribe(string)
+	Destroy(string)
+	GetListener() *pubnub.Listener
+}
+
 type AmqpRawMessage struct {
 	amqp.Delivery
 }
@@ -89,6 +99,10 @@ func (d AmqpRawMessage) GetReplyTo() string {
 
 func (d AmqpRawMessage) GetCorrelationId() string {
 	return d.Delivery.CorrelationId
+}
+
+func (d AmqpRawMessage) GetTimetoken() int64 {
+	return 0
 }
 
 type AmqpRawChannel struct {
@@ -155,6 +169,10 @@ func (d NanoRawMessage) GetCorrelationId() string {
 	return ""
 }
 
+func (d NanoRawMessage) GetTimetoken() int64 {
+	return 0
+}
+
 type NanoRawSocket struct {
 	mangos.Socket
 }
@@ -219,6 +237,10 @@ func (d NatsRawMessage) GetCorrelationId() string {
 	return ""
 }
 
+func (d NatsRawMessage) GetTimetoken() int64 {
+	return 0
+}
+
 type NatsRawConnection struct {
 	nats.Conn
 }
@@ -271,6 +293,10 @@ func (d NatsStreamRawMessage) GetCorrelationId() string {
 	return ""
 }
 
+func (d NatsStreamRawMessage) GetTimetoken() int64 {
+	return 0
+}
+
 type NatsStreamRawConnection struct {
 	natsStream.Conn
 }
@@ -321,6 +347,10 @@ func (d RedisRawMessage) GetCorrelationId() string {
 	return ""
 }
 
+func (d RedisRawMessage) GetTimetoken() int64 {
+	return 0
+}
+
 type RedisRawClient struct {
 	Client *gredis.Client
 	PubSub *gredis.PubSub
@@ -352,4 +382,97 @@ func (d RedisRawClient) Close() error {
 		return d.Client.Close()
 	}
 	return nil
+}
+
+type PubnubRawMessage struct {
+	Message *pubnub.PNMessage
+}
+
+func (d PubnubRawMessage) Ack(multiple bool) error {
+	return nil
+}
+
+func (d PubnubRawMessage) Nack(multiple, requeue bool) error {
+	return nil
+}
+
+func (d PubnubRawMessage) GetBody() []byte {
+	msg := d.Message.Message.(map[string]interface{})
+	return []byte(msg["msg"].(string))
+}
+
+func (d PubnubRawMessage) SetBody(body []byte) RawMessage {
+	d.Message.Message = map[string]interface{}{
+		"msg": string(body),
+	}
+	return d
+}
+
+func (d PubnubRawMessage) GetReplyTo() string {
+	return ""
+}
+
+func (d PubnubRawMessage) GetCorrelationId() string {
+	return ""
+}
+
+func (d PubnubRawMessage) GetTimetoken() int64 {
+	return d.Message.Timetoken
+}
+
+type PubnubRawClient struct {
+	Client   *pubnub.PubNub
+	Listener *pubnub.Listener
+}
+
+func (c PubnubRawClient) FetchHistory(topic string, includeTime bool, lastTime int64, reverse bool, count int) ([]*pubnub.PNMessage, error) {
+	responseMessages := make([]*pubnub.PNMessage, 0)
+	res, _, err := c.Client.History().
+		Channel(topic).
+		IncludeTimetoken(includeTime).
+		Start(lastTime).
+		Reverse(reverse).
+		Count(count).
+		Execute()
+
+	if err != nil {
+		return responseMessages, err
+	}
+
+	for _, m := range res.Messages {
+		responseMessages = append(responseMessages, &pubnub.PNMessage{Message: m.Message, Timetoken: m.Timetoken})
+	}
+
+	return responseMessages, nil
+}
+
+func (c PubnubRawClient) Publish(topic string, msg []byte) error {
+	mesg := map[string]interface{}{
+		"msg": string(msg),
+	}
+
+	_, _, err := c.Client.Publish().
+		Channel(topic).
+		Message(mesg).
+		Execute()
+	return err
+}
+
+func (c PubnubRawClient) Subscribe(topic string) {
+	c.Client.AddListener(c.Listener)
+
+	c.Client.Subscribe().
+		Channels([]string{topic}).
+		Execute()
+}
+
+func (c PubnubRawClient) Destroy(topic string) {
+	c.Client.Unsubscribe().
+		Channels([]string{topic}).
+		Execute()
+
+}
+
+func (c PubnubRawClient) GetListener() *pubnub.Listener {
+	return c.Listener
 }

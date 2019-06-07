@@ -3,9 +3,9 @@ package redis
 import (
 	"crypto/tls"
 
-	judoConfig "github.com/amagimedia/judo/config"
-	"github.com/amagimedia/judo/publisher"
-	"github.com/amagimedia/judo/scripts"
+	judoConfig "github.com/amagimedia/judo/v2/config"
+	"github.com/amagimedia/judo/v2/publisher"
+	"github.com/amagimedia/judo/v2/scripts"
 	gredis "github.com/go-redis/redis"
 )
 
