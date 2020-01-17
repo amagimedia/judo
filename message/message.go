@@ -1,6 +1,9 @@
 package message
 
 import (
+	"bytes"
+	"encoding/gob"
+
 	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
@@ -397,8 +400,17 @@ func (d PubnubRawMessage) Nack(multiple, requeue bool) error {
 }
 
 func (d PubnubRawMessage) GetBody() []byte {
-	msg := d.Message.Message.(map[string]interface{})
-	return []byte(msg["msg"].(string))
+	switch msg := d.Message.Message.(type) {
+	case map[string]interface{}:
+		if _, ok := msg["msg"]; ok {
+			return []byte(msg["msg"].(string))
+		}
+		return getBytes(msg)
+	case interface{}:
+		return getBytes(msg)
+	default:
+		return make([]byte, 0)
+	}
 }
 
 func (d PubnubRawMessage) SetBody(body []byte) RawMessage {
@@ -475,4 +487,14 @@ func (c PubnubRawClient) Destroy(topic string) {
 
 func (c PubnubRawClient) GetListener() *pubnub.Listener {
 	return c.Listener
+}
+
+func getBytes(msg interface{}) []byte {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(msg)
+	if err != nil {
+		return make([]byte, 0)
+	}
+	return buf.Bytes()
 }

@@ -33,6 +33,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			map[string]interface{}{
 				"name":          "dqi50n_agent",
 				"topic":         "dqi50n.out",
+				"publish_key":   "demo",
 				"subscribe_key": "demo",
 				"persistence":   true,
 			},
@@ -43,6 +44,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			map[string]interface{}{
 				"name":        "dqi50n_agent",
 				"topic":       "dqi50n.out",
+				"publish_key": "demo",
 				"persistence": true,
 			},
 			"error-cfg",
@@ -52,6 +54,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			map[string]interface{}{
 				"name":          "dqi50n_agent",
 				"subscribe_key": "demo",
+				"publish_key":   "demo",
 				"persistence":   true,
 			},
 			"error-cfg-1",
@@ -62,6 +65,7 @@ func TestPubnubSubscriber(t *testing.T) {
 				"name":          "dqi50n_agent",
 				"topic":         "dqi50n.out",
 				"subscribe_key": "demo",
+				"publish_key":   "demo",
 				"persistence":   true,
 			},
 			"success-start",
@@ -72,6 +76,7 @@ func TestPubnubSubscriber(t *testing.T) {
 				"name":          "dqi50n_agent",
 				"topic":         "dqi50n.out",
 				"subscribe_key": "demo",
+				"publish_key":   "demo",
 				"persistence":   true,
 			},
 			"dial-err",
@@ -82,6 +87,7 @@ func TestPubnubSubscriber(t *testing.T) {
 				"name":          "dqi50n_agent",
 				"topic":         "dqi50n.out",
 				"subscribe_key": "demo",
+				"publish_key":   "demo",
 				"persistence":   true,
 			},
 			"recv-err",
