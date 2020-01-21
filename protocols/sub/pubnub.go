@@ -18,6 +18,7 @@ var pubnubmap = map[string]string{
 	"topic":         "Topic",
 	"subscribe_key": "SubscribeKey",
 	"publish_key":   "PublishKey",
+	"secret_key":    "SecretKey",
 	"persistence":   "Persistence",
 }
 
@@ -35,6 +36,7 @@ type pubnubConfig struct {
 	Topic        string
 	SubscribeKey string
 	PublishKey   string
+	SecretKey    string
 	Persistence  bool
 	FileName     string
 }
@@ -43,6 +45,7 @@ func (c pubnubConfig) GetKeys() []string {
 	return []string{
 		"name",
 		"topic",
+		"secret_key",
 		"subscribe_key",
 		"publish_key",
 		"persistence",
@@ -205,6 +208,9 @@ func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config := pubnub.NewConfig()
 	config.SubscribeKey = cfg.SubscribeKey
 	config.PublishKey = cfg.PublishKey
+	if cfg.SecretKey != "" {
+		config.SecretKey = cfg.SecretKey
+	}
 
 	return jmsg.PubnubRawClient{Client: pubnub.NewPubNub(config), Listener: pubnub.NewListener()}, nil
 }
