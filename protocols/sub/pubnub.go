@@ -147,6 +147,7 @@ func (sub *PubnubSubscriber) receive(ec chan error) {
 
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
+		message.SetProperty("channel", sub.pubnubConfig.Topic)
 		sub.callback(message)
 		if val, ok := message.GetProperty("ack"); ok && val == "OK" {
 			err := sub.setLastTime()
