@@ -248,20 +248,20 @@ type NatsRawConnection struct {
 	nats.Conn
 }
 
-func (d NatsRawConnection) Publish(subject string, msg []byte) error {
+func (d *NatsRawConnection) Publish(subject string, msg []byte) error {
 	return d.Conn.Publish(subject, msg)
 }
 
-func (d NatsRawConnection) ChanSubscribe(subject string, ch interface{}) (*nats.Subscription, error) {
+func (d *NatsRawConnection) ChanSubscribe(subject string, ch interface{}) (*nats.Subscription, error) {
 	return d.Conn.ChanSubscribe(subject, ch.(chan *nats.Msg))
 }
 
-func (d NatsRawConnection) Subscribe(subject string, cb natsStream.MsgHandler, opts ...natsStream.SubscriptionOption) (natsStream.Subscription, error) {
+func (d *NatsRawConnection) Subscribe(subject string, cb natsStream.MsgHandler, opts ...natsStream.SubscriptionOption) (natsStream.Subscription, error) {
 	c, _ := natsStream.Connect("", "", func(a *natsStream.Options) error { return nil })
 	return c.Subscribe(subject, cb, opts...)
 }
 
-func (d NatsRawConnection) Close() {
+func (d *NatsRawConnection) Close() {
 	if d.Conn.IsConnected() {
 		d.Conn.Close()
 	}

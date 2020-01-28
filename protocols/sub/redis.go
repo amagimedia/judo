@@ -9,6 +9,7 @@ import (
 	"github.com/amagimedia/judo/v2/scripts"
 	gredis "github.com/go-redis/redis"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -174,7 +175,12 @@ func (sub *RedisSubscriber) calcTimestamp(channel, pattern, msg string) *jmsg.Re
 }
 
 func (sub *RedisSubscriber) loadLastTime() error {
-	data, err := ioutil.ReadFile(".agent_msg_time." + sub.redisConfig.FileName)
+	persistencePath := sub.getPersistenceFilePath()
+	if persistencePath == "" {
+		return fmt.Errorf("Unable to find path to write persistence data.")
+	}
+
+	data, err := ioutil.ReadFile(persistencePath)
 	if err != nil {
 		return err
 	}
@@ -187,11 +193,26 @@ func (sub *RedisSubscriber) loadLastTime() error {
 }
 
 func (sub *RedisSubscriber) setLastTime() error {
-	err := ioutil.WriteFile(".agent_msg_time."+sub.redisConfig.FileName, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
+	persistencePath := sub.getPersistenceFilePath()
+	if persistencePath == "" {
+		return fmt.Errorf("Unable to find path to write persistence data.")
+	}
+
+	err := ioutil.WriteFile(persistencePath, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (sub *RedisSubscriber) getPersistenceFilePath() string {
+	filename := ".agent_msg_time." + sub.redisConfig.FileName
+	folder := "/tmp/pubnub/"
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		os.Mkdir(folder, os.ModeDir)
+		return folder + filename
+	}
+	return ""
 }
 
 func redisConnect(cfg redisConfig) (jmsg.RawClient, error) {

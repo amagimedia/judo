@@ -121,5 +121,5 @@ func (sub *NatsSubscriber) receive(ec chan error) {
 
 func natsConnect(url string) (jmsg.RawConnection, error) {
 	connection, err := nats.Connect("nats://" + url)
-	return jmsg.NatsRawConnection{*connection}, err
+	return &jmsg.NatsRawConnection{*connection}, err
 }

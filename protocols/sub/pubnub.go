@@ -2,6 +2,8 @@ package sub
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
@@ -185,7 +187,12 @@ func (sub *PubnubSubscriber) calcTimestamp(timetoken int64, msg interface{}) *jm
 }
 
 func (sub *PubnubSubscriber) loadLastTime() error {
-	data, err := ioutil.ReadFile(".agent_msg_time." + sub.pubnubConfig.FileName)
+	persistencePath := sub.getPersistenceFilePath()
+	if persistencePath == "" {
+		return fmt.Errorf("Unable to find path to write persistence data.")
+	}
+
+	data, err := ioutil.ReadFile(persistencePath)
 	if err != nil {
 		return err
 	}
@@ -198,11 +205,26 @@ func (sub *PubnubSubscriber) loadLastTime() error {
 }
 
 func (sub *PubnubSubscriber) setLastTime() error {
-	err := ioutil.WriteFile(".agent_msg_time."+sub.pubnubConfig.FileName, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
+	persistencePath := sub.getPersistenceFilePath()
+	if persistencePath == "" {
+		return fmt.Errorf("Unable to find path to write persistence data.")
+	}
+
+	err := ioutil.WriteFile(persistencePath, []byte(strconv.FormatInt(sub.lastMessageTime, 10)), 0755)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (sub *PubnubSubscriber) getPersistenceFilePath() string {
+	filename := ".agent_msg_time." + sub.pubnubConfig.FileName
+	folder := "/tmp/pubnub/"
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		os.Mkdir(folder, os.ModeDir)
+		return folder + filename
+	}
+	return ""
 }
 
 func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
