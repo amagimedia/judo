@@ -210,9 +210,8 @@ func (sub *RedisSubscriber) getPersistenceFilePath() string {
 	folder := "/tmp/pubnub/"
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		os.Mkdir(folder, os.ModeDir)
-		return folder + filename
 	}
-	return ""
+	return folder + filename
 }
 
 func redisConnect(cfg redisConfig) (jmsg.RawClient, error) {

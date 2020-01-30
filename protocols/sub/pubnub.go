@@ -222,9 +222,8 @@ func (sub *PubnubSubscriber) getPersistenceFilePath() string {
 	folder := "/tmp/pubnub/"
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		os.Mkdir(folder, os.ModeDir)
-		return folder + filename
 	}
-	return ""
+	return folder + filename
 }
 
 func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
