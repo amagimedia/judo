@@ -221,7 +221,7 @@ func (sub *PubnubSubscriber) getPersistenceFilePath() string {
 	filename := ".agent_msg_time." + sub.pubnubConfig.FileName
 	folder := "/tmp/pubnub/"
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
-		os.Mkdir(folder, os.ModeDir)
+		os.Mkdir(folder, 0770)
 	}
 	return folder + filename
 }
