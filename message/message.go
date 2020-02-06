@@ -491,6 +491,7 @@ func (c PubnubRawClient) GetListener() *pubnub.Listener {
 
 func getBytes(msg interface{}) []byte {
 	var buf bytes.Buffer
+	gob.Register(map[string]interface{}{})
 	enc := gob.NewEncoder(&buf)
 	err := enc.Encode(msg)
 	if err != nil {
