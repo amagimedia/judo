@@ -122,27 +122,57 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 	return errorChannel, err
 }
 
-func (sub *PubnubSubscriber) receive(ec chan error) {
+func (sub *PubnubSubscriber) subscribeLoop() string {
+
+	errorMsg := "Subscriber closed with unknown reason."
 	listener := sub.connection.GetListener()
+
 	for {
 		select {
 		case status := <-listener.Status:
 			switch status.Category {
+			case pubnub.PNDisconnectedCategory:
+				errorMsg = "Subscriber Disconnected status received"
+				return errorMsg
 			case pubnub.PNConnectedCategory:
-				for message := range listener.Message {
-					sub.processChannel <- sub.calcTimestamp(message.Timetoken, message.Message)
-					err := sub.setLastTime()
-					if err != nil {
-						break
-					}
-				}
-				ec <- fmt.Errorf("Receive channel closed, Subscription ended.")
-				sub.Close()
-				return
+			case pubnub.PNReconnectedCategory:
+			case pubnub.PNTimeoutCategory:
+				errorMsg = "Subscriber Timeout status received"
+				return errorMsg
+			case pubnub.PNCancelledCategory:
+				errorMsg = "Subscriber Cancelled status received"
+				return errorMsg
+			case pubnub.PNLoopStopCategory:
+				errorMsg = "Subscriber Loop Stop status received"
+				return errorMsg
+			case pubnub.PNReconnectionAttemptsExhausted:
+				errorMsg = "Subscriber Connect attempts exhausted status received"
+				return errorMsg
+			case pubnub.PNRequestMessageCountExceededCategory:
+				errorMsg = "Subscriber Request count exceeded status received"
+				return errorMsg
+			}
+		case message, ok := <-listener.Message:
+			if !ok {
+				errorMsg = "Subscriber Message channel closed."
+				return errorMsg
+			}
+			sub.processChannel <- sub.calcTimestamp(message.Timetoken, message.Message)
+			err := sub.setLastTime()
+			if err != nil {
+				errorMsg = err.Error()
+				return errorMsg
 			}
 		}
 	}
-	ec <- fmt.Errorf("Receive channel closed, Subscription ended.")
+	return errorMsg
+}
+
+func (sub *PubnubSubscriber) receive(ec chan error) {
+
+	errorMsg := sub.subscribeLoop()
+
+	ec <- fmt.Errorf("Receive channel closed, Error: " + errorMsg)
 	sub.Close()
 	return
 }
