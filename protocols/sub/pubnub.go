@@ -126,6 +126,7 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 
 	errorMsg := "Subscriber closed with unknown reason."
 	listener := sub.connection.GetListener()
+	connected := false
 
 	for {
 		select {
@@ -136,6 +137,7 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				return errorMsg
 			case pubnub.PNConnectedCategory:
 				fmt.Println("ConnectedCategory")
+				connected = true
 			case pubnub.PNReconnectedCategory:
 				fmt.Println("ReConnectedCategory")
 			case pubnub.PNTimeoutCategory:
@@ -153,10 +155,17 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 			case pubnub.PNRequestMessageCountExceededCategory:
 				errorMsg = "Subscriber Request count exceeded status received"
 				return errorMsg
+			case pubnub.PNUnknownCategory:
+				errorMsg = "Subscriber Unknown status received"
+				return errorMsg
 			default:
-				fmt.Println("Default Unknown " + status.Category.String())
+				errorMsg = "Subscriber UnCaught status received."
+				return errorMsg
 			}
 		case message, ok := <-listener.Message:
+			if !connected {
+				continue
+			}
 			if !ok {
 				errorMsg = "Subscriber Message channel closed."
 				return errorMsg
