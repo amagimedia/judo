@@ -135,7 +135,9 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				errorMsg = "Subscriber Disconnected status received"
 				return errorMsg
 			case pubnub.PNConnectedCategory:
+				fmt.Println("ConnectedCategory")
 			case pubnub.PNReconnectedCategory:
+				fmt.Println("ReConnectedCategory")
 			case pubnub.PNTimeoutCategory:
 				errorMsg = "Subscriber Timeout status received"
 				return errorMsg
@@ -151,6 +153,8 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 			case pubnub.PNRequestMessageCountExceededCategory:
 				errorMsg = "Subscriber Request count exceeded status received"
 				return errorMsg
+			default:
+				fmt.Println("Default Unknown")
 			}
 		case message, ok := <-listener.Message:
 			if !ok {
