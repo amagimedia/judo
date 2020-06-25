@@ -114,20 +114,13 @@ func (sub *PubnubSubscriber) subscribeLoop() bool {
 	connected := false
 
 	for {
-		fmt.Println("Loop")
 		listener := sub.connection.GetListener()
 		select {
-		case status, ok := <-listener.Status:
-			fmt.Println(status)
-			if !ok {
-				fmt.Println("Listen Status Not OK")
-			}
+		case status := <-listener.Status:
 			switch status.Category {
 			case pubnub.PNConnectedCategory:
-				fmt.Println("ConnectedCategory")
 				connected = true
 			case pubnub.PNReconnectedCategory:
-				fmt.Println("ReConnectedCategory")
 			case pubnub.PNUnknownCategory:
 				return true
 			case pubnub.PNDisconnectedCategory:
@@ -137,6 +130,8 @@ func (sub *PubnubSubscriber) subscribeLoop() bool {
 			case pubnub.PNCancelledCategory:
 				fallthrough
 			case pubnub.PNLoopStopCategory:
+				fallthrough
+			case pubnub.PNAccessDeniedCategory:
 				fallthrough
 			case pubnub.PNReconnectionAttemptsExhausted:
 				fallthrough
