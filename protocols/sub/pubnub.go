@@ -125,14 +125,17 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 func (sub *PubnubSubscriber) subscribeLoop() string {
 
 	errorMsg := "Subscriber closed with unknown reason."
-	listener := sub.connection.GetListener()
 	connected := false
 
 	for {
 		fmt.Println("Loop")
+		listener := sub.connection.GetListener()
 		select {
-		case status := <-listener.Status:
+		case status, ok := <-listener.Status:
 			fmt.Println(status)
+			if !ok {
+				fmt.Println("Listen Status Not OK")
+			}
 			switch status.Category {
 			case pubnub.PNDisconnectedCategory:
 				errorMsg = "Subscriber Disconnected status received"
@@ -159,7 +162,6 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				return errorMsg
 			case pubnub.PNUnknownCategory:
 				fmt.Println("UnknownCategory")
-				continue
 			default:
 				errorMsg = "Subscriber UnCaught status received." + status.Category.String()
 				return errorMsg
