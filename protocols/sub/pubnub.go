@@ -129,8 +129,10 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 	connected := false
 
 	for {
+		fmt.Println("Loop")
 		select {
 		case status := <-listener.Status:
+			fmt.Println(status)
 			switch status.Category {
 			case pubnub.PNDisconnectedCategory:
 				errorMsg = "Subscriber Disconnected status received"
