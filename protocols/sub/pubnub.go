@@ -154,7 +154,7 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				errorMsg = "Subscriber Request count exceeded status received"
 				return errorMsg
 			default:
-				fmt.Println("Default Unknown")
+				fmt.Println("Default Unknown " + status.Category.String())
 			}
 		case message, ok := <-listener.Message:
 			if !ok {
