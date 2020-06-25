@@ -156,10 +156,10 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				errorMsg = "Subscriber Request count exceeded status received"
 				return errorMsg
 			case pubnub.PNUnknownCategory:
-				errorMsg = "Subscriber Unknown status received"
-				return errorMsg
+				fmt.Println("UnknownCategory")
+				continue
 			default:
-				errorMsg = "Subscriber UnCaught status received."
+				errorMsg = "Subscriber UnCaught status received." + status.Category.String()
 				return errorMsg
 			}
 		case message, ok := <-listener.Message:
@@ -274,7 +274,6 @@ func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config.SubscribeKey = cfg.SubscribeKey
 	config.PublishKey = cfg.PublishKey
 	config.SubscribeRequestTimeout = 30
-	config.MaximumReconnectionRetries = 2
 
 	if cfg.SecretKey != "" {
 		config.SecretKey = cfg.SecretKey
