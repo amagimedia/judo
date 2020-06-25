@@ -91,7 +91,7 @@ func TestPubnubSubscriber(t *testing.T) {
 				"persistence":   true,
 			},
 			"recv-err",
-			errors.New("Receive channel closed, Error: Subscriber Message channel closed."),
+			errors.New("Subscriber listener closed. Exiting"),
 		},
 	}
 	for _, c := range cases {
@@ -127,7 +127,7 @@ func TestPubnubSubscriber(t *testing.T) {
 			fakeClient.On("GetListener").Return(&pubnub.Listener{Message: ch, Status: st})
 			fakeClient.On("FetchHistory", mock.AnythingOfType("string"), mock.AnythingOfType("bool"), mock.AnythingOfType("int64"), mock.AnythingOfType("bool"), mock.AnythingOfType("int")).Return(make([]*pubnub.PNMessage, 0))
 			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
-			ec, err := fakeSubscriber.Start()
+			_, err = fakeSubscriber.Start()
 			if err != nil {
 				t.Error("Failed in verifying start method.")
 			}
@@ -138,7 +138,6 @@ func TestPubnubSubscriber(t *testing.T) {
 				t.Error("Failed in verifying start method.")
 			}
 			st <- &pubnub.PNStatus{Category: pubnub.PNDisconnectedCategory}
-			<-ec
 			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
 			fakeSubscriber.Close()
 		case "dial-err":
@@ -157,8 +156,9 @@ func TestPubnubSubscriber(t *testing.T) {
 			fakeClient.On("Subscribe", mock.AnythingOfType("string")).Return(nil)
 			fakeClient.On("FetchHistory", mock.AnythingOfType("string"), mock.AnythingOfType("bool"), mock.AnythingOfType("int64"), mock.AnythingOfType("bool"), mock.AnythingOfType("int")).Return(make([]*pubnub.PNMessage, 0))
 			fakeClient.On("Destroy", mock.AnythingOfType("string")).Return(nil)
-			_, err = fSubscriber.Start()
-			if err.Error() != c.retType.Error() {
+			ec, err := fSubscriber.Start()
+			er := <-ec
+			if er == nil || er.Error() != c.retType.Error() {
 				t.Error("Start did not fail when expected")
 			}
 		case "recv-err":

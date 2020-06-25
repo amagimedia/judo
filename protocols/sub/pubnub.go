@@ -102,29 +102,15 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 
 	sub.processChannel = make(chan *jmsg.PubnubMessage)
 
-	loadErr := sub.loadLastTime()
-
-	sub.connection, err = sub.connector(sub.pubnubConfig)
-	if err != nil {
-		return errorChannel, err
-	}
-
 	go sub.receive(errorChannel)
 
-	sub.connection.Subscribe(sub.pubnubConfig.Topic)
-
 	go sub.handleMessage(errorChannel)
-
-	if sub.pubnubConfig.Persistence && loadErr == nil {
-		go sub.getMissingMessages()
-	}
 
 	return errorChannel, err
 }
 
-func (sub *PubnubSubscriber) subscribeLoop() string {
+func (sub *PubnubSubscriber) subscribeLoop() bool {
 
-	errorMsg := "Subscriber closed with unknown reason."
 	connected := false
 
 	for {
@@ -137,60 +123,76 @@ func (sub *PubnubSubscriber) subscribeLoop() string {
 				fmt.Println("Listen Status Not OK")
 			}
 			switch status.Category {
-			case pubnub.PNDisconnectedCategory:
-				errorMsg = "Subscriber Disconnected status received"
-				return errorMsg
 			case pubnub.PNConnectedCategory:
 				fmt.Println("ConnectedCategory")
 				connected = true
 			case pubnub.PNReconnectedCategory:
 				fmt.Println("ReConnectedCategory")
-			case pubnub.PNTimeoutCategory:
-				errorMsg = "Subscriber Timeout status received"
-				return errorMsg
-			case pubnub.PNCancelledCategory:
-				errorMsg = "Subscriber Cancelled status received"
-				return errorMsg
-			case pubnub.PNLoopStopCategory:
-				errorMsg = "Subscriber Loop Stop status received"
-				return errorMsg
-			case pubnub.PNReconnectionAttemptsExhausted:
-				errorMsg = "Subscriber Connect attempts exhausted status received"
-				return errorMsg
-			case pubnub.PNRequestMessageCountExceededCategory:
-				errorMsg = "Subscriber Request count exceeded status received"
-				return errorMsg
 			case pubnub.PNUnknownCategory:
-				fmt.Println("UnknownCategory")
+				return true
+			case pubnub.PNDisconnectedCategory:
+				fallthrough
+			case pubnub.PNTimeoutCategory:
+				fallthrough
+			case pubnub.PNCancelledCategory:
+				fallthrough
+			case pubnub.PNLoopStopCategory:
+				fallthrough
+			case pubnub.PNReconnectionAttemptsExhausted:
+				fallthrough
+			case pubnub.PNRequestMessageCountExceededCategory:
+				fallthrough
 			default:
-				errorMsg = "Subscriber UnCaught status received." + status.Category.String()
-				return errorMsg
+				return false
 			}
 		case message, ok := <-listener.Message:
 			if !connected {
 				continue
 			}
 			if !ok {
-				errorMsg = "Subscriber Message channel closed."
-				return errorMsg
+				return false
 			}
 			sub.processChannel <- sub.calcTimestamp(message.Timetoken, message.Message)
 			err := sub.setLastTime()
 			if err != nil {
-				errorMsg = err.Error()
-				return errorMsg
+				return false
 			}
 		}
 	}
-	return errorMsg
+	return false
 }
 
 func (sub *PubnubSubscriber) receive(ec chan error) {
 
-	errorMsg := sub.subscribeLoop()
+	var err error
 
-	ec <- fmt.Errorf("Receive channel closed, Error: " + errorMsg)
-	sub.Close()
+	// We return only if Connection fails with any error
+	// We retry only on UnKnownCategory Error
+	// Other errors will cause exit
+	for {
+
+		loadErr := sub.loadLastTime()
+		sub.connection, err = sub.connector(sub.pubnubConfig)
+		if err != nil {
+			ec <- err
+			return
+		}
+
+		if sub.pubnubConfig.Persistence && loadErr == nil {
+			go sub.getMissingMessages()
+		}
+
+		sub.connection.Subscribe(sub.pubnubConfig.Topic)
+		status := sub.subscribeLoop()
+		if !status {
+			sub.Close()
+			break
+		}
+		sub.Close()
+
+	}
+
+	ec <- fmt.Errorf("Subscriber listener closed. Exiting")
 	return
 }
 
@@ -277,7 +279,8 @@ func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config := pubnub.NewConfig()
 	config.SubscribeKey = cfg.SubscribeKey
 	config.PublishKey = cfg.PublishKey
-	config.SubscribeRequestTimeout = 30
+	config.SubscribeRequestTimeout = 120
+	config.MaximumReconnectionRetries = -1
 
 	if cfg.SecretKey != "" {
 		config.SecretKey = cfg.SecretKey
