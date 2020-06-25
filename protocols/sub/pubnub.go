@@ -264,6 +264,9 @@ func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	config := pubnub.NewConfig()
 	config.SubscribeKey = cfg.SubscribeKey
 	config.PublishKey = cfg.PublishKey
+	config.SubscribeRequestTimeout = 30
+	config.MaximumReconnectionRetries = 2
+
 	if cfg.SecretKey != "" {
 		config.SecretKey = cfg.SecretKey
 	}
