@@ -117,7 +117,7 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 
 	_, err = sub.backupSub.Start()
 	if err != nil {
-		fmt.Print(err)
+		errorChannel <- err
 	}
 
 	go sub.receive(errorChannel)
