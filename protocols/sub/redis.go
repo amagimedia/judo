@@ -3,15 +3,16 @@ package sub
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
 	"github.com/amagimedia/judo/v2/scripts"
 	gredis "github.com/go-redis/redis"
-	"io/ioutil"
-	"os"
-	"strconv"
-	"strings"
 )
 
 type redisConnector func(redisConfig) (jmsg.RawClient, error)
@@ -143,11 +144,14 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
-		sub.callback(message)
-		if val, ok := message.GetProperty("ack"); ok && val == "OK" {
-			err := sub.setLastTime()
-			if err != nil {
-				break
+		messages := strings.Split(string(message.GetMessage()), "|")
+		if !isDuplicateEntry(messages[2]) {
+			sub.callback(message)
+			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
+				err := sub.setLastTime()
+				if err != nil {
+					break
+				}
 			}
 		}
 	}

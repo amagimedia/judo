@@ -3,14 +3,16 @@ package sub
 import (
 	"fmt"
 	"os"
+	"sync"
+
+	"io/ioutil"
+	"strconv"
+	"strings"
 
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
 	pubnub "github.com/pubnub/go"
-	"io/ioutil"
-	"strconv"
-	"strings"
 )
 
 type pubnubConnector func(pubnubConfig) (jmsg.RawPubnubClient, error)
@@ -31,6 +33,7 @@ type PubnubSubscriber struct {
 	callback        func(jmsg.Message)
 	processChannel  chan *jmsg.PubnubMessage
 	lastMessageTime int64
+	backupSub       client.JudoClient
 }
 
 type pubnubConfig struct {
@@ -70,6 +73,7 @@ func (c pubnubConfig) GetField(key string) string {
 
 func NewPubnubSub() *PubnubSubscriber {
 	sub := &PubnubSubscriber{connector: pubnubConnect}
+	sub.backupSub = &RedisSubscriber{connector: redisConnect}
 	return sub
 }
 
@@ -83,16 +87,25 @@ func (sub *PubnubSubscriber) Configure(config map[string]interface{}) error {
 		return err
 	}
 	sub.pubnubConfig.FileName = strings.Replace(sub.pubnubConfig.Topic, "/", "", -1)
-
+	if _, ok := config["backupsub"]; ok {
+		backupData := config["backupsub"].(map[string]interface{})
+		backupConfig := backupData["config"].(map[string]interface{})
+		err = sub.backupSub.Configure(backupConfig)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
 func (sub *PubnubSubscriber) Close() {
 	sub.connection.Destroy(sub.pubnubConfig.Topic)
+	sub.backupSub.Close()
 }
 
 func (sub *PubnubSubscriber) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
 	sub.callback = callback
+	sub.backupSub.OnMessage(callback)
 	return sub
 }
 
@@ -101,6 +114,11 @@ func (sub *PubnubSubscriber) Start() (<-chan error, error) {
 	errorChannel := make(chan error)
 
 	sub.processChannel = make(chan *jmsg.PubnubMessage)
+
+	_, err = sub.backupSub.Start()
+	if err != nil {
+		fmt.Print(err)
+	}
 
 	go sub.receive(errorChannel)
 
@@ -194,11 +212,14 @@ func (sub *PubnubSubscriber) receive(ec chan error) {
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		message.SetProperty("channel", sub.pubnubConfig.Topic)
-		sub.callback(message)
-		if val, ok := message.GetProperty("ack"); ok && val == "OK" {
-			err := sub.setLastTime()
-			if err != nil {
-				break
+		messages := strings.Split(string(message.GetMessage()), "|")
+		if !isDuplicateEntry(messages[2]) {
+			sub.callback(message)
+			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
+				err := sub.setLastTime()
+				if err != nil {
+					break
+				}
 			}
 		}
 	}
@@ -282,4 +303,49 @@ func pubnubConnect(cfg pubnubConfig) (jmsg.RawPubnubClient, error) {
 	}
 
 	return jmsg.PubnubRawClient{Client: pubnub.NewPubNub(config), Listener: pubnub.NewListener()}, nil
+}
+
+var mu sync.Mutex
+
+func isDuplicateEntry(uniqueID string) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	filepath := getFilePath()
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		os.Create(filepath)
+	}
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return false
+	}
+	dataString := string(data)
+	if dataString != "" {
+		uniqueIDs := strings.Split(dataString, "\n")
+		for index := range uniqueIDs {
+			if uniqueIDs[index] == uniqueID {
+				uniqueIDs[index] = uniqueIDs[len(uniqueIDs)-1]
+				uniqueIDs = uniqueIDs[:len(uniqueIDs)-1]
+				dataString = strings.Join(uniqueIDs, "\n")
+				err = ioutil.WriteFile(filepath, []byte(dataString), 0755)
+				if err != nil {
+					panic(err)
+				}
+				return true
+			}
+		}
+	}
+	err = ioutil.WriteFile(filepath, append(data, []byte(uniqueID+"\n")...), 0755)
+	if err != nil {
+		panic(err)
+	}
+	return false
+}
+
+func getFilePath() string {
+	filename := "unique.id"
+	folder := "/tmp/pubnub/"
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		os.Mkdir(folder, 0770)
+	}
+	return folder + filename
 }
