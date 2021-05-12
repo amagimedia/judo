@@ -6,6 +6,7 @@ import (
 
 	"github.com/amagimedia/judo/v2/client"
 	judoMsg "github.com/amagimedia/judo/v2/message"
+	primaryBackupPub "github.com/amagimedia/judo/v2/protocols/pub/primarybackuppub"
 	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
 	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
 	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
@@ -19,11 +20,13 @@ import (
 func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 
 	var sub client.JudoClient
+	var primarySub client.JudoClient
 	switch protocol {
 	case "amqp":
 		switch method {
 		case "sub":
-			sub = judoSub.NewAmqpSub()
+			primarySub = judoSub.NewAmqpSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		case "reply":
 			sub = judoReply.NewAmqpReply()
 		default:
@@ -32,7 +35,8 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nano":
 		switch method {
 		case "sub":
-			sub = judoSub.NewNanoSub()
+			primarySub = judoSub.NewNanoSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		case "reply":
 			sub = judoReply.NewNanoReply()
 		default:
@@ -41,7 +45,8 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nats":
 		switch method {
 		case "sub":
-			sub = judoSub.NewNatsSub()
+			primarySub = judoSub.NewNatsSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		case "reply":
 			sub = judoReply.NewNatsReply()
 		default:
@@ -50,21 +55,24 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nats-streaming":
 		switch method {
 		case "sub":
-			sub = judoSub.NewNatsStreamSub()
+			primarySub = judoSub.NewNatsStreamSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
 	case "redis":
 		switch method {
 		case "sub":
-			sub = judoSub.NewRedisSub()
+			primarySub = judoSub.NewRedisSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
 	case "pubnub":
 		switch method {
 		case "sub":
-			sub = judoSub.NewPubnubSub()
+			primarySub := judoSub.NewPubnubSub()
+			sub = judoSub.NewPrimaryBackupSub(primarySub)
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
@@ -85,6 +93,7 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 	// Return Publisher Object
 
 	var pub publisher.JudoPub
+	var publishers publisher.JudoPub
 	var err error
 
 	switch pubType + "-" + pubMethod {
@@ -116,5 +125,6 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 	default:
 		return nil, nil
 	}
-	return pub, nil
+	publishers, err = primaryBackupPub.New(pub)
+	return publishers, err
 }

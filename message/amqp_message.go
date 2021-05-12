@@ -56,3 +56,10 @@ func (m AmqpMessage) SendAck(ackMessage ...[]byte) {
 func (m AmqpMessage) SendNack(ackMessage ...[]byte) {
 	m.RawMessage.Nack(false, true)
 }
+
+func (m AmqpMessage) IsDupliacteEntry() bool {
+	if val, ok := m.GetProperty("uniqueID"); ok {
+		return isDuplicateID(val)
+	}
+	return true
+}

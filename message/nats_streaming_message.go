@@ -36,3 +36,10 @@ func (m NatsStreamMessage) SendAck(ackMsg ...[]byte) {
 func (m NatsStreamMessage) SendNack(ackMessage ...[]byte) {
 	return
 }
+
+func (m NatsStreamMessage) IsDupliacteEntry() bool {
+	if val, ok := m.GetProperty("uniqueID"); ok {
+		return isDuplicateID(val)
+	}
+	return true
+}

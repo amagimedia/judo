@@ -145,7 +145,8 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if !isDuplicateEntry(messages[2]) {
+		message.SetProperty("uniqueID", messages[2])
+		if !message.IsDupliacteEntry() {
 			sub.callback(message)
 			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
 				err := sub.setLastTime()

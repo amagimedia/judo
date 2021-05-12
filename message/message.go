@@ -3,6 +3,10 @@ package message
 import (
 	"bytes"
 	"encoding/gob"
+	"io/ioutil"
+	"os"
+	"strings"
+	"sync"
 
 	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
@@ -19,6 +23,7 @@ type Message interface {
 	SetProperty(string, string)
 	SendAck(...[]byte)
 	SendNack(...[]byte)
+	IsDupliacteEntry() bool
 }
 
 type RawMessage interface {
@@ -498,4 +503,52 @@ func getBytes(msg interface{}) []byte {
 		return make([]byte, 0)
 	}
 	return buf.Bytes()
+}
+
+func getFilePath() string {
+	filename := "unique.id"
+	folder := "/tmp/pubnub/"
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		err = os.Mkdir(folder, 0770)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return folder + filename
+}
+
+var mu sync.Mutex
+
+func isDuplicateID(uniqueID string) bool {
+	mu.Lock()
+	defer mu.Unlock()
+	filepath := getFilePath()
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		os.Create(filepath)
+	}
+	data, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return false
+	}
+	dataString := string(data)
+	if dataString != "" {
+		uniqueIDs := strings.Split(dataString, "\n")
+		for index := range uniqueIDs {
+			if uniqueIDs[index] == uniqueID {
+				uniqueIDs[index] = uniqueIDs[len(uniqueIDs)-1]
+				uniqueIDs = uniqueIDs[:len(uniqueIDs)-1]
+				dataString = strings.Join(uniqueIDs, "\n")
+				err = ioutil.WriteFile(filepath, []byte(dataString), 0755)
+				if err != nil {
+					panic(err)
+				}
+				return true
+			}
+		}
+	}
+	err = ioutil.WriteFile(filepath, append(data, []byte(uniqueID+"\n")...), 0755)
+	if err != nil {
+		panic(err)
+	}
+	return false
 }
