@@ -74,10 +74,10 @@ func NewPubnubSub() *PubnubSubscriber {
 	return sub
 }
 
-func (sub *PubnubSubscriber) Configure(config map[string]interface{}) error {
+func (sub *PubnubSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.pubnubConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {

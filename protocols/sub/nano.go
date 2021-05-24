@@ -59,10 +59,10 @@ func NewNanoSub() *NanoSubscriber {
 	return sub
 }
 
-func (sub *NanoSubscriber) Configure(config map[string]interface{}) error {
+func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.nanoConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {

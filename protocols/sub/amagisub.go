@@ -1,43 +1,44 @@
 package sub
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/amagimedia/judo/v2/client"
 	jmsg "github.com/amagimedia/judo/v2/message"
 )
 
-type PrimaryBackupSubscriber struct {
+type AmagiSub struct {
 	primarySub client.JudoClient
 	backupSub  client.JudoClient
 }
 
-func NewPrimaryBackupSub(primarySub client.JudoClient) *PrimaryBackupSubscriber {
-	subs := &PrimaryBackupSubscriber{primarySub: primarySub}
+func NewAmagiSub(primarySub, backupSub string) *AmagiSub {
+	subs := &AmagiSub{}
+	subs.primarySub = newSub(primarySub)
+	subs.backupSub = newSub(backupSub)
 	return subs
 }
 
-func (subs *PrimaryBackupSubscriber) Configure(config map[string]interface{}) error {
-	err := subs.primarySub.Configure(config)
-	if _, ok := config["backupsub"]; ok {
-		backupData := config["backupsub"].(map[string]interface{})
-		subs.newBackupSub(backupData["type"].(string))
-		backupConfig := backupData["config"].(map[string]interface{})
-		err = subs.backupSub.Configure(backupConfig)
-		if err != nil {
-			return err
-		}
+func (subs *AmagiSub) Configure(config []interface{}) error {
+	primaryConfig := []interface{}{config[0]}
+	err := subs.primarySub.Configure(primaryConfig)
+	if err != nil {
+		return err
+	}
+	backupConfig := []interface{}{config[1]}
+	err = subs.backupSub.Configure(backupConfig)
+	if err != nil {
+		return err
 	}
 	return err
 }
 
-func (subs *PrimaryBackupSubscriber) Close() {
+func (subs *AmagiSub) Close() {
 	subs.primarySub.Close()
 	subs.backupSub.Close()
 }
 
-func (subs *PrimaryBackupSubscriber) Start() (<-chan error, error) {
+func (subs *AmagiSub) Start() (<-chan error, error) {
 	combinedErrorChannel := make(chan error)
 	errorChannel, err := subs.primarySub.Start()
 	if err != nil {
@@ -61,15 +62,13 @@ func (subs *PrimaryBackupSubscriber) Start() (<-chan error, error) {
 	return combinedErrorChannel, err
 }
 
-func (subs *PrimaryBackupSubscriber) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
+func (subs *AmagiSub) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
 	subs.primarySub.OnMessage(callback)
-	if subs.backupSub != nil {
-		subs.backupSub.OnMessage(callback)
-	}
+	subs.backupSub.OnMessage(callback)
 	return subs
 }
 
-func (subs *PrimaryBackupSubscriber) newBackupSub(protocol string) error {
+func newSub(protocol string) client.JudoClient {
 	var sub client.JudoClient
 	switch protocol {
 	case "amqp":
@@ -84,9 +83,6 @@ func (subs *PrimaryBackupSubscriber) newBackupSub(protocol string) error {
 		sub = NewRedisSub()
 	case "pubnub":
 		sub = NewPubnubSub()
-	default:
-		errors.New("Invalid Parameters")
 	}
-	subs.backupSub = sub
-	return nil
+	return sub
 }

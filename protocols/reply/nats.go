@@ -3,6 +3,7 @@ package reply
 import (
 	"errors"
 	"fmt"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
@@ -65,10 +66,10 @@ func NewNatsReply() *NatsReply {
 	return rep
 }
 
-func (rep *NatsReply) Configure(config map[string]interface{}) error {
+func (rep *NatsReply) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&rep.natsConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {

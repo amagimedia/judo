@@ -6,7 +6,7 @@ import (
 
 	"github.com/amagimedia/judo/v2/client"
 	judoMsg "github.com/amagimedia/judo/v2/message"
-	primaryBackupPub "github.com/amagimedia/judo/v2/protocols/pub/primarybackuppub"
+	amagiPub "github.com/amagimedia/judo/v2/protocols/pub/amagipub"
 	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
 	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
 	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
@@ -17,16 +17,14 @@ import (
 	"github.com/amagimedia/judo/v2/publisher"
 )
 
-func NewSubscriber(protocol, method string) (client.JudoClient, error) {
+func NewSubscriber(protocol, method, primarySub, backupSub string) (client.JudoClient, error) {
 
 	var sub client.JudoClient
-	var primarySub client.JudoClient
 	switch protocol {
 	case "amqp":
 		switch method {
 		case "sub":
-			primarySub = judoSub.NewAmqpSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewAmqpSub()
 		case "reply":
 			sub = judoReply.NewAmqpReply()
 		default:
@@ -35,8 +33,7 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nano":
 		switch method {
 		case "sub":
-			primarySub = judoSub.NewNanoSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewNanoSub()
 		case "reply":
 			sub = judoReply.NewNanoReply()
 		default:
@@ -45,8 +42,7 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nats":
 		switch method {
 		case "sub":
-			primarySub = judoSub.NewNatsSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewNatsSub()
 		case "reply":
 			sub = judoReply.NewNatsReply()
 		default:
@@ -55,24 +51,28 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	case "nats-streaming":
 		switch method {
 		case "sub":
-			primarySub = judoSub.NewNatsStreamSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewNatsStreamSub()
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
 	case "redis":
 		switch method {
 		case "sub":
-			primarySub = judoSub.NewRedisSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewRedisSub()
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
 	case "pubnub":
 		switch method {
 		case "sub":
-			primarySub := judoSub.NewPubnubSub()
-			sub = judoSub.NewPrimaryBackupSub(primarySub)
+			sub = judoSub.NewPubnubSub()
+		default:
+			return sub, errors.New("Invalid Parameters, method: " + method)
+		}
+	case "amagi":
+		switch method {
+		case "sub":
+			sub = judoSub.NewAmagiSub(primarySub, backupSub)
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
@@ -87,13 +87,12 @@ func NewSubscriber(protocol, method string) (client.JudoClient, error) {
 	return sub, nil
 }
 
-func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
+func NewPublisher(pubType string, pubMethod string, primary string, backup string) (publisher.JudoPub, error) {
 	// Switch on PubType
 	// Pass Config to Connect and get Publisher Object
 	// Return Publisher Object
 
 	var pub publisher.JudoPub
-	var publishers publisher.JudoPub
 	var err error
 
 	switch pubType + "-" + pubMethod {
@@ -122,9 +121,13 @@ func NewPublisher(pubType string, pubMethod string) (publisher.JudoPub, error) {
 		if err != nil {
 			return pub, err
 		}
+	case "amagi-publish":
+		pub, err = amagiPub.New(primary, backup)
+		if err != nil {
+			return pub, err
+		}
 	default:
 		return nil, nil
 	}
-	publishers, err = primaryBackupPub.New(pub)
-	return publishers, err
+	return pub, err
 }

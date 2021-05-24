@@ -2,12 +2,13 @@ package sub
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/amagimedia/judo/v2/message"
 	"github.com/amagimedia/judo/v2/message/mocks"
 	gredis "github.com/go-redis/redis"
 	"github.com/stretchr/testify/mock"
-	"testing"
-	"time"
 )
 
 func TestRedisSubscriber(t *testing.T) {
@@ -24,69 +25,81 @@ func TestRedisSubscriber(t *testing.T) {
 	fakeSubscriber := &RedisSubscriber{connector: connector}
 
 	cases := []struct {
-		config  map[string]interface{}
+		config  []interface{}
 		retVal  string
 		retType error
 	}{
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"endpoint":    ":6379",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"endpoint":    ":6379",
+					"persistence": true,
+				},
 			},
 			"success-cfg",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"separator":   "|",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"separator":   "|",
+					"persistence": true,
+				},
 			},
 			"error-cfg",
 			errors.New("Key Missing : endpoint"),
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"separator":   "|",
-				"endpoint":    ":6379",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"separator":   "|",
+					"endpoint":    ":6379",
+					"persistence": true,
+				},
 			},
 			"error-cfg-1",
 			errors.New("Key Missing : topic"),
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"separator":   "|",
-				"endpoint":    ":6379",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"separator":   "|",
+					"endpoint":    ":6379",
+					"persistence": true,
+				},
 			},
 			"success-start",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"separator":   "|",
-				"persistence": true,
-				"endpoint":    ":6379",
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"separator":   "|",
+					"persistence": true,
+					"endpoint":    ":6379",
+				},
 			},
 			"dial-err",
 			errors.New("Cannot dial to client"),
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"separator":   "|",
-				"endpoint":    ":6379",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"separator":   "|",
+					"endpoint":    ":6379",
+					"persistence": true,
+				},
 			},
 			"recv-err",
 			errors.New("Receive channel closed, Subscription ended."),

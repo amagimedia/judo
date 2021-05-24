@@ -3,11 +3,12 @@ package sub
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
 	"github.com/streadway/amqp"
-	"strings"
 )
 
 var amqpmap = map[string]string{
@@ -155,11 +156,11 @@ func (sub *AmqpSubscriber) OnMessage(callback func(jmsg.Message)) client.JudoCli
 	return sub
 }
 
-func (sub *AmqpSubscriber) Configure(config map[string]interface{}) error {
+func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 
 	// extract connection details from config and call connect
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	if _, ok := config["routingKeys"]; !ok {
 		return errors.New("Key Missing : routingKeys")
 	}

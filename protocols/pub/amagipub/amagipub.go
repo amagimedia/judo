@@ -9,38 +9,40 @@ import (
 	"github.com/amagimedia/judo/v2/publisher"
 )
 
-type PrimaryBackupPublisher struct {
+type AmagiPub struct {
 	primaryPub publisher.JudoPub
 	backupPub  publisher.JudoPub
 }
 
-func New(primaryPub publisher.JudoPub) (publisher.JudoPub, error) {
-	publishers := &PrimaryBackupPublisher{primaryPub: primaryPub}
+func New(primary, backup string) (publisher.JudoPub, error) {
+	publishers := &AmagiPub{}
+	var err error
+	publishers.primaryPub, err = newPub(primary)
+	if err != nil {
+		return nil, err
+	}
+	publishers.backupPub, err = newPub(backup)
+	if err != nil {
+		return nil, err
+	}
 	return publishers, nil
 }
 
-func (publishers *PrimaryBackupPublisher) Connect(configs map[string]interface{}) error {
-	err := publishers.primaryPub.Connect(configs)
+func (publishers *AmagiPub) Connect(configs []interface{}) error {
+	primaryConfig := []interface{}{configs[0]}
+	err := publishers.primaryPub.Connect(primaryConfig)
 	if err != nil {
 		return err
 	}
-	if _, ok := configs["backup"]; ok {
-
-		backupData := configs["backup"].(map[string]interface{})
-		err := publishers.newBackupPub(backupData["type"].(string))
-		if err != nil {
-			return err
-		}
-		backupConfig := backupData["config"].(map[string]interface{})
-		err = publishers.backupPub.Connect(backupConfig)
-		if err != nil {
-			return err
-		}
+	backupConfig := []interface{}{configs[1]}
+	err = publishers.backupPub.Connect(backupConfig)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-func (publishers *PrimaryBackupPublisher) Publish(subject string, msg []byte) error {
+func (publishers *AmagiPub) Publish(subject string, msg []byte) error {
 	err := publishers.primaryPub.Publish(subject, msg)
 	if err != nil {
 		return err
@@ -52,7 +54,7 @@ func (publishers *PrimaryBackupPublisher) Publish(subject string, msg []byte) er
 	return nil
 }
 
-func (publishers *PrimaryBackupPublisher) Close() error {
+func (publishers *AmagiPub) Close() error {
 	err := publishers.primaryPub.Close()
 	if err != nil {
 		return err
@@ -64,38 +66,37 @@ func (publishers *PrimaryBackupPublisher) Close() error {
 	return nil
 }
 
-func (publishers *PrimaryBackupPublisher) newBackupPub(protocol string) error {
+func newPub(protocol string) (publisher.JudoPub, error) {
 	var pub publisher.JudoPub
 	var err error
 	switch protocol {
 	case "redis":
 		pub, err = redispub.New()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case "sidekiq":
 		pub, err = sidekiqpub.New()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case "nano":
 		pub, err = nanoreq.New()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case "nats":
 		pub, err = stanpub.New()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case "pubnub":
 		pub, err = pubnubPub.New()
 		if err != nil {
-			return err
+			return nil, err
 		}
 	default:
-		return nil
+		return pub, nil
 	}
-	publishers.backupPub = pub
-	return nil
+	return pub, nil
 }

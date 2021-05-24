@@ -35,12 +35,11 @@ type pubnubPub struct {
 	Client *pubnub.PubNub
 }
 
-func (pub *pubnubPub) Connect(configs map[string]interface{}) error {
+func (pub *pubnubPub) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
-
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

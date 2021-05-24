@@ -25,70 +25,82 @@ func TestPubnubSubscriber(t *testing.T) {
 	fakeSubscriber := &PubnubSubscriber{connector: connector}
 
 	cases := []struct {
-		config  map[string]interface{}
+		config  []interface{}
 		retVal  string
 		retType error
 	}{
 		{
-			map[string]interface{}{
-				"name":          "dqi50n_agent",
-				"topic":         "dqi50n.out",
-				"publish_key":   "demo",
-				"subscribe_key": "demo",
-				"persistence":   true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":          "dqi50n_agent",
+					"topic":         "dqi50n.out",
+					"publish_key":   "demo",
+					"subscribe_key": "demo",
+					"persistence":   true,
+				},
 			},
 			"success-cfg",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":        "dqi50n_agent",
-				"topic":       "dqi50n.out",
-				"publish_key": "demo",
-				"persistence": true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":        "dqi50n_agent",
+					"topic":       "dqi50n.out",
+					"publish_key": "demo",
+					"persistence": true,
+				},
 			},
 			"error-cfg",
 			errors.New("Key Missing : subscribe_key"),
 		},
 		{
-			map[string]interface{}{
-				"name":          "dqi50n_agent",
-				"subscribe_key": "demo",
-				"publish_key":   "demo",
-				"persistence":   true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":          "dqi50n_agent",
+					"subscribe_key": "demo",
+					"publish_key":   "demo",
+					"persistence":   true,
+				},
 			},
 			"error-cfg-1",
 			errors.New("Key Missing : topic"),
 		},
 		{
-			map[string]interface{}{
-				"name":          "dqi50n_agent",
-				"topic":         "dqi50n.out",
-				"subscribe_key": "demo",
-				"publish_key":   "demo",
-				"persistence":   true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":          "dqi50n_agent",
+					"topic":         "dqi50n.out",
+					"subscribe_key": "demo",
+					"publish_key":   "demo",
+					"persistence":   true,
+				},
 			},
 			"success-start",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":          "dqi50n_agent",
-				"topic":         "dqi50n.out",
-				"subscribe_key": "demo",
-				"publish_key":   "demo",
-				"persistence":   true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":          "dqi50n_agent",
+					"topic":         "dqi50n.out",
+					"subscribe_key": "demo",
+					"publish_key":   "demo",
+					"persistence":   true,
+				},
 			},
 			"dial-err",
 			errors.New("Cannot dial to client"),
 		},
 		{
-			map[string]interface{}{
-				"name":          "dqi50n_agent",
-				"topic":         "dqi50n.out",
-				"subscribe_key": "demo",
-				"publish_key":   "demo",
-				"persistence":   true,
+			[]interface{}{
+				map[string]interface{}{
+					"name":          "dqi50n_agent",
+					"topic":         "dqi50n.out",
+					"subscribe_key": "demo",
+					"publish_key":   "demo",
+					"persistence":   true,
+				},
 			},
 			"recv-err",
 			errors.New("Subscriber listener closed. Exiting"),

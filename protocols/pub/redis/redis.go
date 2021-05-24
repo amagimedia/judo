@@ -47,12 +47,12 @@ type redisPub struct {
 	Client *gredis.Client
 }
 
-func (pub *redisPub) Connect(configs map[string]interface{}) error {
+func (pub *redisPub) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
 
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

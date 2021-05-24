@@ -2,6 +2,7 @@ package sub
 
 import (
 	"fmt"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
@@ -68,10 +69,10 @@ func NewNatsStreamSub() *NatsStreamSubscriber {
 	return sub
 }
 
-func (sub *NatsStreamSubscriber) Configure(config map[string]interface{}) error {
+func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.natsStreamConfig}
 	err = configHelper.ValidateAndSet(config)
 

@@ -58,10 +58,10 @@ func NewNanoReply() *NanoReply {
 	return rep
 }
 
-func (rep *NanoReply) Configure(config map[string]interface{}) error {
+func (rep *NanoReply) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&rep.nanoConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {

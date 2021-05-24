@@ -77,10 +77,10 @@ func NewRedisSub() *RedisSubscriber {
 	return sub
 }
 
-func (sub *RedisSubscriber) Configure(config map[string]interface{}) error {
+func (sub *RedisSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.redisConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {
