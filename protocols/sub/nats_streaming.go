@@ -6,6 +6,7 @@ import (
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	gredis "github.com/go-redis/redis"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
 
@@ -67,6 +68,10 @@ func (c natsStreamConfig) GetField(key string) string {
 func NewNatsStreamSub() *NatsStreamSubscriber {
 	sub := &NatsStreamSubscriber{connector: natsStreamConnect}
 	return sub
+}
+
+func (sub *NatsStreamSubscriber) SetDependencies(redisConn *gredis.Client) {
+
 }
 
 func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {

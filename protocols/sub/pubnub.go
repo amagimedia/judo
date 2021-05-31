@@ -11,6 +11,7 @@ import (
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	gredis "github.com/go-redis/redis"
 	pubnub "github.com/pubnub/go"
 )
 
@@ -32,6 +33,7 @@ type PubnubSubscriber struct {
 	callback        func(jmsg.Message)
 	processChannel  chan *jmsg.PubnubMessage
 	lastMessageTime int64
+	redisConn       *gredis.Client
 }
 
 type pubnubConfig struct {
@@ -72,6 +74,10 @@ func (c pubnubConfig) GetField(key string) string {
 func NewPubnubSub() *PubnubSubscriber {
 	sub := &PubnubSubscriber{connector: pubnubConnect}
 	return sub
+}
+
+func (sub *PubnubSubscriber) SetDependencies(redisConn *gredis.Client) {
+	sub.redisConn = redisConn
 }
 
 func (sub *PubnubSubscriber) Configure(configs []interface{}) error {
@@ -195,8 +201,7 @@ func (sub *PubnubSubscriber) receive(ec chan error) {
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		messages := strings.Split(string(message.GetMessage()), "|")
-		message.SetProperty("uniqueID", messages[2])
-		if !message.IsDupliacteEntry() {
+		if !isDuplicateID(messages[2], sub.redisConn) {
 			sub.callback(message)
 			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
 				err := sub.setLastTime()

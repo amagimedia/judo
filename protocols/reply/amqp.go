@@ -7,6 +7,7 @@ import (
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	gredis "github.com/go-redis/redis"
 	"github.com/streadway/amqp"
 )
 
@@ -129,6 +130,8 @@ func (rep *AmqpReply) OnMessage(callback func(jmsg.Message)) client.JudoClient {
 	rep.callback = callback
 	return rep
 }
+
+func (sub *AmqpReply) SetDependencies(redisConn *gredis.Client) {}
 
 func (rep *AmqpReply) Configure(configs []interface{}) error {
 

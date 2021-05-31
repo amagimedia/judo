@@ -34,6 +34,7 @@ type RedisSubscriber struct {
 	callback        func(jmsg.Message)
 	processChannel  chan *jmsg.RedisMessage
 	lastMessageTime int64
+	redisConn       *gredis.Client
 }
 
 type redisConfig struct {
@@ -75,6 +76,10 @@ func (c redisConfig) GetField(key string) string {
 func NewRedisSub() *RedisSubscriber {
 	sub := &RedisSubscriber{connector: redisConnect}
 	return sub
+}
+
+func (sub *RedisSubscriber) SetDependencies(redisConn *gredis.Client) {
+	sub.redisConn = redisConn
 }
 
 func (sub *RedisSubscriber) Configure(configs []interface{}) error {
@@ -145,8 +150,7 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		messages := strings.Split(string(message.GetMessage()), "|")
-		message.SetProperty("uniqueID", messages[2])
-		if !message.IsDupliacteEntry() {
+		if !isDuplicateID(messages[2], sub.redisConn) {
 			sub.callback(message)
 			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
 				err := sub.setLastTime()

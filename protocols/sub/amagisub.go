@@ -5,6 +5,7 @@ import (
 
 	"github.com/amagimedia/judo/v2/client"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	gredis "github.com/go-redis/redis"
 )
 
 type AmagiSub struct {
@@ -17,6 +18,11 @@ func NewAmagiSub(primarySub, backupSub string) *AmagiSub {
 	subs.primarySub = newSub(primarySub)
 	subs.backupSub = newSub(backupSub)
 	return subs
+}
+
+func (sub *AmagiSub) SetDependencies(redisConn *gredis.Client) {
+	sub.primarySub.SetDependencies(redisConn)
+	sub.backupSub.SetDependencies(redisConn)
 }
 
 func (subs *AmagiSub) Configure(config []interface{}) error {
@@ -85,4 +91,22 @@ func newSub(protocol string) client.JudoClient {
 		sub = NewPubnubSub()
 	}
 	return sub
+}
+
+func getSetName() string {
+	setName := "duplicateEntryCheck"
+	return setName
+}
+
+func isDuplicateID(uniqueID string, redisConn *gredis.Client) bool {
+	if redisConn == nil {
+		return false
+	}
+	topic := getSetName()
+	if redisConn.SIsMember(topic, uniqueID).Val() {
+		redisConn.SRem(topic, uniqueID)
+		return true
+	}
+	redisConn.SAdd(topic, uniqueID)
+	return false
 }

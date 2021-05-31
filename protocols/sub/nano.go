@@ -7,6 +7,7 @@ import (
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
+	gredis "github.com/go-redis/redis"
 	mangos "nanomsg.org/go-mangos"
 )
 
@@ -57,6 +58,10 @@ func (c nanoConfig) GetField(key string) string {
 func NewNanoSub() *NanoSubscriber {
 	sub := &NanoSubscriber{connector: nanoConnect}
 	return sub
+}
+
+func (sub *NanoSubscriber) SetDependencies(redisConn *gredis.Client) {
+
 }
 
 func (sub *NanoSubscriber) Configure(configs []interface{}) error {

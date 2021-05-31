@@ -7,6 +7,7 @@ import (
 	mangoRep "github.com/go-mangos/mangos/protocol/rep"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
+	gredis "github.com/go-redis/redis"
 )
 
 type nanoConnector func() (jmsg.RawSocket, error)
@@ -57,6 +58,8 @@ func NewNanoReply() *NanoReply {
 	rep := &NanoReply{connector: nanoConnect}
 	return rep
 }
+
+func (sub *NanoReply) SetDependencies(redisConn *gredis.Client) {}
 
 func (rep *NanoReply) Configure(configs []interface{}) error {
 

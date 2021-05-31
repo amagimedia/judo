@@ -7,6 +7,7 @@ import (
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 )
 
@@ -65,6 +66,8 @@ func NewNatsReply() *NatsReply {
 	rep := &NatsReply{connector: natsConnect, msgQueue: make(<-chan *nats.Msg)}
 	return rep
 }
+
+func (sub *NatsReply) SetDependencies(redisConn *gredis.Client) {}
 
 func (rep *NatsReply) Configure(configs []interface{}) error {
 

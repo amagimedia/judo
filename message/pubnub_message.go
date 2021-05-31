@@ -37,10 +37,3 @@ func (m *PubnubMessage) SendNack(ackMessage ...[]byte) {
 	m.SetProperty("ack", "NOK")
 	return
 }
-
-func (m *PubnubMessage) IsDupliacteEntry() bool {
-	if val, ok := m.GetProperty("uniqueID"); ok {
-		return isDuplicateID(val)
-	}
-	return true
-}

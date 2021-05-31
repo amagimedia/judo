@@ -37,10 +37,3 @@ func (m *RedisMessage) SendNack(ackMessage ...[]byte) {
 	m.SetProperty("ack", "NOK")
 	return
 }
-
-func (m *RedisMessage) IsDupliacteEntry() bool {
-	if val, ok := m.GetProperty("uniqueID"); ok {
-		return isDuplicateID(val)
-	}
-	return true
-}
