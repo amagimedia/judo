@@ -3,8 +3,6 @@ package message
 import (
 	"bytes"
 	"encoding/gob"
-	"os"
-	"sync"
 
 	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
@@ -501,17 +499,3 @@ func getBytes(msg interface{}) []byte {
 	}
 	return buf.Bytes()
 }
-
-func getFilePath() string {
-	filename := "unique.id"
-	folder := "/tmp/pubnub/"
-	if _, err := os.Stat(folder); os.IsNotExist(err) {
-		err = os.Mkdir(folder, 0770)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return folder + filename
-}
-
-var mu sync.Mutex
