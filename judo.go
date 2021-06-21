@@ -17,7 +17,7 @@ import (
 	"github.com/amagimedia/judo/v2/publisher"
 )
 
-func NewSubscriber(protocol, method, primarySub, backupSub string) (client.JudoClient, error) {
+func NewSubscriber(protocol, method, primarySubProtocol, backupSubProtocol string) (client.JudoClient, error) {
 
 	var sub client.JudoClient
 	switch protocol {
@@ -72,7 +72,7 @@ func NewSubscriber(protocol, method, primarySub, backupSub string) (client.JudoC
 	case "amagi":
 		switch method {
 		case "sub":
-			sub = judoSub.NewAmagiSub(primarySub, backupSub)
+			sub = judoSub.NewAmagiSub(primarySubProtocol, backupSubProtocol)
 		default:
 			return sub, errors.New("Invalid Parameters, method: " + method)
 		}
@@ -87,7 +87,7 @@ func NewSubscriber(protocol, method, primarySub, backupSub string) (client.JudoC
 	return sub, nil
 }
 
-func NewPublisher(pubType string, pubMethod string, primary string, backup string) (publisher.JudoPub, error) {
+func NewPublisher(pubType, pubMethod, primaryPubProtocol, backupPubProtocol string) (publisher.JudoPub, error) {
 	// Switch on PubType
 	// Pass Config to Connect and get Publisher Object
 	// Return Publisher Object
@@ -122,7 +122,7 @@ func NewPublisher(pubType string, pubMethod string, primary string, backup strin
 			return pub, err
 		}
 	case "amagi-publish":
-		pub, err = amagiPub.New(primary, backup)
+		pub, err = amagiPub.New(primaryPubProtocol, backupPubProtocol)
 		if err != nil {
 			return pub, err
 		}

@@ -2,10 +2,12 @@ package sub
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/service"
 	gredis "github.com/go-redis/redis"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
@@ -28,6 +30,7 @@ type NatsStreamSubscriber struct {
 	natsStreamConfig
 	errorChannel chan error
 	callback     func(jmsg.Message)
+	dupl         service.Duplicate
 }
 
 type natsStreamConfig struct {
@@ -70,10 +73,6 @@ func NewNatsStreamSub() *NatsStreamSubscriber {
 	return sub
 }
 
-func (sub *NatsStreamSubscriber) SetDependencies(redisConn *gredis.Client) {
-
-}
-
 func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 
 	var err error
@@ -93,6 +92,13 @@ func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 	}
 
 	sub.connection, err = sub.connector(url, sub.natsStreamConfig, sub.errHandler)
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 
 	return err
 }
@@ -121,7 +127,15 @@ func (sub *NatsStreamSubscriber) Close() {
 func (sub *NatsStreamSubscriber) receive(msg *natsStream.Msg) {
 
 	message := jmsg.NatsStreamMessage{jmsg.NatsStreamRawMessage{msg}, sub.connection, make(map[string]string)}
-	sub.callback(message)
+	messages := strings.Split(string(message.GetMessage()), "|")
+	if len(messages) == 4 {
+		messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+		sub.dupl.UniqueID = messages[0]
+		message.SetMessage([]byte(messageString))
+	}
+	if !sub.dupl.IsDuplicate() {
+		sub.callback(message)
+	}
 
 }
 

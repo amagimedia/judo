@@ -8,6 +8,7 @@ import (
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/service"
 	gredis "github.com/go-redis/redis"
 	"github.com/streadway/amqp"
 )
@@ -44,6 +45,7 @@ type AmqpSubscriber struct {
 	msgQueue  <-chan amqp.Delivery
 	amqpConfig
 	callback func(jmsg.Message)
+	dupl     service.Duplicate
 }
 
 type amqpConfig struct {
@@ -139,8 +141,16 @@ func (sub *AmqpSubscriber) Start() (<-chan error, error) {
 	go func() {
 		for msg := range sub.msgQueue {
 			wrappedMsg := jmsg.AmqpMessage{jmsg.AmqpRawMessage{msg}, sub.channel, make(map[string]string)}
-			wrappedMsg.SetProperty("protocol_type", "subscribe")
-			sub.callback(wrappedMsg)
+			messages := strings.Split(string(wrappedMsg.GetMessage()), "|")
+			if len(messages) == 4 {
+				messageString := strings.Replace(string(wrappedMsg.GetMessage()), messages[0]+"|", "", 1)
+				sub.dupl.UniqueID = messages[0]
+				wrappedMsg.SetMessage([]byte(messageString))
+			}
+			if !sub.dupl.IsDuplicate() {
+				wrappedMsg.SetProperty("protocol_type", "subscribe")
+				sub.callback(wrappedMsg)
+			}
 		}
 		errorChannel <- errors.New("Disconnected from server, subscriber closed.")
 	}()
@@ -156,8 +166,6 @@ func (sub *AmqpSubscriber) OnMessage(callback func(jmsg.Message)) client.JudoCli
 	sub.callback = callback
 	return sub
 }
-
-func (sub *AmqpSubscriber) SetDependencies(redisConn *gredis.Client) {}
 
 func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 
@@ -181,6 +189,14 @@ func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 	}
 
 	err = sub.setup(sub.amqpConfig)
+
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 
 	return err
 }

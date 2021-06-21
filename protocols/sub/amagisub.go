@@ -8,45 +8,40 @@ import (
 	gredis "github.com/go-redis/redis"
 )
 
-type AmagiSub struct {
-	primarySub client.JudoClient
-	backupSub  client.JudoClient
+type AmagiSubscriber struct {
+	primarySubscriber client.JudoClient
+	backupSubscriber  client.JudoClient
 }
 
-func NewAmagiSub(primarySub, backupSub string) *AmagiSub {
-	subs := &AmagiSub{}
-	subs.primarySub = newSub(primarySub)
-	subs.backupSub = newSub(backupSub)
+func NewAmagiSub(primarySubProtocol, backupSubProtocol string) *AmagiSubscriber {
+	subs := &AmagiSubscriber{}
+	subs.primarySubscriber = newSub(primarySubProtocol)
+	subs.backupSubscriber = newSub(backupSubProtocol)
 	return subs
 }
 
-func (sub *AmagiSub) SetDependencies(redisConn *gredis.Client) {
-	sub.primarySub.SetDependencies(redisConn)
-	sub.backupSub.SetDependencies(redisConn)
-}
-
-func (subs *AmagiSub) Configure(config []interface{}) error {
-	primaryConfig := []interface{}{config[0]}
-	err := subs.primarySub.Configure(primaryConfig)
+func (subs *AmagiSubscriber) Configure(config []interface{}) error {
+	primaryConfig := []interface{}{config[0], config[2]}
+	err := subs.primarySubscriber.Configure(primaryConfig)
 	if err != nil {
 		return err
 	}
-	backupConfig := []interface{}{config[1]}
-	err = subs.backupSub.Configure(backupConfig)
+	backupConfig := []interface{}{config[1], config[2]}
+	err = subs.backupSubscriber.Configure(backupConfig)
 	if err != nil {
 		return err
 	}
 	return err
 }
 
-func (subs *AmagiSub) Close() {
-	subs.primarySub.Close()
-	subs.backupSub.Close()
+func (subs *AmagiSubscriber) Close() {
+	subs.primarySubscriber.Close()
+	subs.backupSubscriber.Close()
 }
 
-func (subs *AmagiSub) Start() (<-chan error, error) {
+func (subs *AmagiSubscriber) Start() (<-chan error, error) {
 	combinedErrorChannel := make(chan error)
-	errorChannel, err := subs.primarySub.Start()
+	errorChannel, err := subs.primarySubscriber.Start()
 	if err != nil {
 		return combinedErrorChannel, err
 	}
@@ -58,7 +53,7 @@ func (subs *AmagiSub) Start() (<-chan error, error) {
 		combinedErrorChannel <- cherr
 	}(errorChannel)
 
-	backupErrorChannel, err := subs.backupSub.Start()
+	backupErrorChannel, err := subs.backupSubscriber.Start()
 	go func(backupErrorChannel <-chan error) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -68,9 +63,9 @@ func (subs *AmagiSub) Start() (<-chan error, error) {
 	return combinedErrorChannel, err
 }
 
-func (subs *AmagiSub) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
-	subs.primarySub.OnMessage(callback)
-	subs.backupSub.OnMessage(callback)
+func (subs *AmagiSubscriber) OnMessage(callback func(msg jmsg.Message)) client.JudoClient {
+	subs.primarySubscriber.OnMessage(callback)
+	subs.backupSubscriber.OnMessage(callback)
 	return subs
 }
 

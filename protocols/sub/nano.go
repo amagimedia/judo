@@ -1,9 +1,12 @@
 package sub
 
 import (
+	"strings"
+
 	"github.com/amagimedia/judo/v2/client"
 	judoConfig "github.com/amagimedia/judo/v2/config"
 	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v2/service"
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
@@ -25,6 +28,7 @@ type NanoSubscriber struct {
 	connection jmsg.RawSocket //mangos.Socket
 	nanoConfig
 	callback func(jmsg.Message)
+	dupl     service.Duplicate
 }
 
 type nanoConfig struct {
@@ -60,10 +64,6 @@ func NewNanoSub() *NanoSubscriber {
 	return sub
 }
 
-func (sub *NanoSubscriber) SetDependencies(redisConn *gredis.Client) {
-
-}
-
 func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 
 	var err error
@@ -73,7 +73,13 @@ func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 	return err
 }
 
@@ -122,7 +128,15 @@ func (sub *NanoSubscriber) receive(ec chan error) {
 			return
 		}
 		message := jmsg.NanoMessage{jmsg.NanoRawMessage{msg}, sub.connection, make(map[string]string)}
-		sub.callback(message)
+		messages := strings.Split(string(message.GetMessage()), "|")
+		if len(messages) == 4 {
+			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+			sub.dupl.UniqueID = messages[0]
+			message.SetMessage([]byte(messageString))
+		}
+		if !sub.dupl.IsDuplicate() {
+			sub.callback(message)
+		}
 	}
 }
 
