@@ -1,7 +1,7 @@
 package client
 
 import (
-	jmsg "github.com/amagimedia/judo/v2/message"
+	jmsg "github.com/amagimedia/judo/v3/message"
 )
 
 type JudoClient interface {

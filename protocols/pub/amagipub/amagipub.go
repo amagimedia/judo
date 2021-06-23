@@ -3,12 +3,12 @@ package pub
 import (
 	"fmt"
 
-	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
-	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
-	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
-	stanpub "github.com/amagimedia/judo/v2/protocols/pub/stan"
-	nanoreq "github.com/amagimedia/judo/v2/protocols/req/nano"
-	"github.com/amagimedia/judo/v2/publisher"
+	pubnubPub "github.com/amagimedia/judo/v3/protocols/pub/pubnub"
+	redispub "github.com/amagimedia/judo/v3/protocols/pub/redis"
+	sidekiqpub "github.com/amagimedia/judo/v3/protocols/pub/sidekiq"
+	stanpub "github.com/amagimedia/judo/v3/protocols/pub/stan"
+	nanoreq "github.com/amagimedia/judo/v3/protocols/req/nano"
+	"github.com/amagimedia/judo/v3/publisher"
 	"github.com/google/uuid"
 )
 

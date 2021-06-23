@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/scripts"
-	"github.com/amagimedia/judo/v2/service"
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/scripts"
+	"github.com/amagimedia/judo/v3/service"
 	gredis "github.com/go-redis/redis"
 )
 
@@ -35,7 +35,7 @@ type RedisSubscriber struct {
 	callback        func(jmsg.Message)
 	processChannel  chan *jmsg.RedisMessage
 	lastMessageTime int64
-	dupl            service.Duplicate
+	deDuplifier     service.Duplicate
 }
 
 type redisConfig struct {
@@ -91,7 +91,7 @@ func (sub *RedisSubscriber) Configure(configs []interface{}) error {
 	sub.redisConfig.FileName = strings.Replace(sub.redisConfig.Topic, "/", "", -1)
 	if len(configs) == 2 {
 		redisConfig := configs[1].(map[string]interface{})
-		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
 			Addr:     redisConfig["endpoint"].(string),
 			Password: redisConfig["password"].(string),
 		})
@@ -157,9 +157,9 @@ func (sub *RedisSubscriber) handleMessage(ec chan error) {
 		if len(messages) == 4 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			message.SetMessage([]byte(messageString))
-			sub.dupl.UniqueID = messages[0]
+			sub.deDuplifier.UniqueID = messages[0]
 		}
-		if !sub.dupl.IsDuplicate() {
+		if !sub.deDuplifier.IsDuplicate() {
 			sub.callback(message)
 			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
 				err := sub.setLastTime()

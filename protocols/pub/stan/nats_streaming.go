@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/publisher"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/publisher"
 	gstan "github.com/nats-io/go-nats-streaming"
 )
 

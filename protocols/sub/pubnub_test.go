@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
 	pubnub "github.com/pubnub/go"
 	"github.com/stretchr/testify/mock"
 )

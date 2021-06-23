@@ -1,8 +1,8 @@
 package pubnub
 
 import (
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/publisher"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/publisher"
 	pubnub "github.com/pubnub/go"
 )
 

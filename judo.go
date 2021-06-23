@@ -4,17 +4,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoMsg "github.com/amagimedia/judo/v2/message"
-	amagiPub "github.com/amagimedia/judo/v2/protocols/pub/amagipub"
-	pubnubPub "github.com/amagimedia/judo/v2/protocols/pub/pubnub"
-	redispub "github.com/amagimedia/judo/v2/protocols/pub/redis"
-	sidekiqpub "github.com/amagimedia/judo/v2/protocols/pub/sidekiq"
-	stanpub "github.com/amagimedia/judo/v2/protocols/pub/stan"
-	judoReply "github.com/amagimedia/judo/v2/protocols/reply"
-	nanoreq "github.com/amagimedia/judo/v2/protocols/req/nano"
-	judoSub "github.com/amagimedia/judo/v2/protocols/sub"
-	"github.com/amagimedia/judo/v2/publisher"
+	"github.com/amagimedia/judo/v3/client"
+	judoMsg "github.com/amagimedia/judo/v3/message"
+	amagiPub "github.com/amagimedia/judo/v3/protocols/pub/amagipub"
+	pubnubPub "github.com/amagimedia/judo/v3/protocols/pub/pubnub"
+	redispub "github.com/amagimedia/judo/v3/protocols/pub/redis"
+	sidekiqpub "github.com/amagimedia/judo/v3/protocols/pub/sidekiq"
+	stanpub "github.com/amagimedia/judo/v3/protocols/pub/stan"
+	judoReply "github.com/amagimedia/judo/v3/protocols/reply"
+	nanoreq "github.com/amagimedia/judo/v3/protocols/req/nano"
+	judoSub "github.com/amagimedia/judo/v3/protocols/sub"
+	"github.com/amagimedia/judo/v3/publisher"
 )
 
 func NewSubscriber(protocol, method, primarySubProtocol, backupSubProtocol string) (client.JudoClient, error) {

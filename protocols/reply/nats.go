@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
 	nats "github.com/nats-io/go-nats"
 )
 

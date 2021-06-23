@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/service"
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/service"
 	gredis "github.com/go-redis/redis"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
@@ -30,7 +30,7 @@ type NatsStreamSubscriber struct {
 	natsStreamConfig
 	errorChannel chan error
 	callback     func(jmsg.Message)
-	dupl         service.Duplicate
+	deDuplifier  service.Duplicate
 }
 
 type natsStreamConfig struct {
@@ -94,7 +94,7 @@ func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 	sub.connection, err = sub.connector(url, sub.natsStreamConfig, sub.errHandler)
 	if len(configs) == 2 {
 		redisConfig := configs[1].(map[string]interface{})
-		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
 			Addr:     redisConfig["endpoint"].(string),
 			Password: redisConfig["password"].(string),
 		})
@@ -130,10 +130,10 @@ func (sub *NatsStreamSubscriber) receive(msg *natsStream.Msg) {
 	messages := strings.Split(string(message.GetMessage()), "|")
 	if len(messages) == 4 {
 		messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
-		sub.dupl.UniqueID = messages[0]
+		sub.deDuplifier.UniqueID = messages[0]
 		message.SetMessage([]byte(messageString))
 	}
-	if !sub.dupl.IsDuplicate() {
+	if !sub.deDuplifier.IsDuplicate() {
 		sub.callback(message)
 	}
 

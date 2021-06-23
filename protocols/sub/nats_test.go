@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
 	nats "github.com/nats-io/go-nats"
 	"github.com/stretchr/testify/mock"
 )

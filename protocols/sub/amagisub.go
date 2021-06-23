@@ -3,9 +3,8 @@ package sub
 import (
 	"sync"
 
-	"github.com/amagimedia/judo/v2/client"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	gredis "github.com/go-redis/redis"
+	"github.com/amagimedia/judo/v3/client"
+	jmsg "github.com/amagimedia/judo/v3/message"
 )
 
 type AmagiSubscriber struct {
@@ -86,22 +85,4 @@ func newSub(protocol string) client.JudoClient {
 		sub = NewPubnubSub()
 	}
 	return sub
-}
-
-func getSetName() string {
-	setName := "duplicateEntryCheck"
-	return setName
-}
-
-func isDuplicateID(uniqueID string, redisConn *gredis.Client) bool {
-	if redisConn == nil {
-		return false
-	}
-	topic := getSetName()
-	if redisConn.SIsMember(topic, uniqueID).Val() {
-		redisConn.SRem(topic, uniqueID)
-		return true
-	}
-	redisConn.SAdd(topic, uniqueID)
-	return false
 }

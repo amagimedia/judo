@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/publisher"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/publisher"
 	greq "github.com/go-mangos/mangos/protocol/req"
 	"github.com/go-mangos/mangos/transport/ipc"
 	gomangos "nanomsg.org/go-mangos"

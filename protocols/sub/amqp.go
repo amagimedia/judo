@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/service"
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/service"
 	gredis "github.com/go-redis/redis"
 	"github.com/streadway/amqp"
 )
@@ -44,8 +44,8 @@ type AmqpSubscriber struct {
 	queue     amqp.Queue
 	msgQueue  <-chan amqp.Delivery
 	amqpConfig
-	callback func(jmsg.Message)
-	dupl     service.Duplicate
+	callback    func(jmsg.Message)
+	deDuplifier service.Duplicate
 }
 
 type amqpConfig struct {
@@ -144,10 +144,10 @@ func (sub *AmqpSubscriber) Start() (<-chan error, error) {
 			messages := strings.Split(string(wrappedMsg.GetMessage()), "|")
 			if len(messages) == 4 {
 				messageString := strings.Replace(string(wrappedMsg.GetMessage()), messages[0]+"|", "", 1)
-				sub.dupl.UniqueID = messages[0]
+				sub.deDuplifier.UniqueID = messages[0]
 				wrappedMsg.SetMessage([]byte(messageString))
 			}
-			if !sub.dupl.IsDuplicate() {
+			if !sub.deDuplifier.IsDuplicate() {
 				wrappedMsg.SetProperty("protocol_type", "subscribe")
 				sub.callback(wrappedMsg)
 			}
@@ -192,7 +192,7 @@ func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 
 	if len(configs) == 2 {
 		redisConfig := configs[1].(map[string]interface{})
-		sub.dupl.RedisConn = gredis.NewClient(&gredis.Options{
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
 			Addr:     redisConfig["endpoint"].(string),
 			Password: redisConfig["password"].(string),
 		})

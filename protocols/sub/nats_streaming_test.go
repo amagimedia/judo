@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
+	"github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/stretchr/testify/mock"
 )
