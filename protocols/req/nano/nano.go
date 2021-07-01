@@ -2,13 +2,14 @@ package nano
 
 import (
 	"fmt"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/publisher"
+	"time"
+
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/publisher"
 	greq "github.com/go-mangos/mangos/protocol/req"
 	"github.com/go-mangos/mangos/transport/ipc"
 	gomangos "nanomsg.org/go-mangos"
-	"time"
 )
 
 type Config struct {
@@ -49,12 +50,12 @@ type nanoReq struct {
 	Socket jmsg.RawSocket
 }
 
-func (req *nanoReq) Connect(configs map[string]interface{}) error {
+func (req *nanoReq) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
 
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

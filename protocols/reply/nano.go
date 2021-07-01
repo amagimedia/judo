@@ -1,9 +1,9 @@
 package reply
 
 import (
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
 	mangoRep "github.com/go-mangos/mangos/protocol/rep"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
@@ -58,10 +58,10 @@ func NewNanoReply() *NanoReply {
 	return rep
 }
 
-func (rep *NanoReply) Configure(config map[string]interface{}) error {
+func (rep *NanoReply) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&rep.nanoConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {

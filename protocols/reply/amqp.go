@@ -3,9 +3,10 @@ package reply
 import (
 	"errors"
 	"fmt"
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
+
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/streadway/amqp"
 )
 
@@ -129,11 +130,11 @@ func (rep *AmqpReply) OnMessage(callback func(jmsg.Message)) client.JudoClient {
 	return rep
 }
 
-func (rep *AmqpReply) Configure(config map[string]interface{}) error {
+func (rep *AmqpReply) Configure(configs []interface{}) error {
 
 	// extract connection details from config and call connect
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	cfgHelper := judoConfig.ConfigHelper{&rep.amqpConfig}
 	err = cfgHelper.ValidateAndSet(config)
 	if err != nil {

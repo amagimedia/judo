@@ -1,13 +1,14 @@
 package message_test
 
 import (
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
+	"testing"
+
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
 	"github.com/go-mangos/mangos/protocol/sub"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
 	"github.com/streadway/amqp"
-	"testing"
 )
 
 func TestAmqpMessage(t *testing.T) {

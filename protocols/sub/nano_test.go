@@ -2,11 +2,12 @@ package sub
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
-	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
+
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNanoSubscriber(t *testing.T) {
@@ -23,73 +24,87 @@ func TestNanoSubscriber(t *testing.T) {
 	fakeSubscriber := &NanoSubscriber{connector: connector}
 
 	cases := []struct {
-		config  map[string]interface{}
+		config  []interface{}
 		retVal  string
 		retType error
 	}{
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"topic":    "dqi50n.out",
-				"endpoint": "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"topic":    "dqi50n.out",
+					"endpoint": "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"success-cfg",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"topic":     "dqi50n.out",
-				"separator": "|",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"topic":     "dqi50n.out",
+					"separator": "|",
+				},
 			},
 			"error-cfg",
 			errors.New("Key Missing : endpoint"),
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"separator": "|",
-				"endpoint":  "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"separator": "|",
+					"endpoint":  "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"error-cfg-1",
 			errors.New("Key Missing : topic"),
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"topic":     "dqi50n.out",
-				"separator": "|",
-				"endpoint":  "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"topic":     "dqi50n.out",
+					"separator": "|",
+					"endpoint":  "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"success-start",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"topic":     "dqi50n.out",
-				"separator": "|",
-				"endpoint":  "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"topic":     "dqi50n.out",
+					"separator": "|",
+					"endpoint":  "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"dial-err",
 			errors.New("Cannot dial to socket"),
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"topic":     "dqi50n.out",
-				"separator": "|",
-				"endpoint":  "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"topic":     "dqi50n.out",
+					"separator": "|",
+					"endpoint":  "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"recv-err",
 			errors.New("Cannot recv from socket"),
 		},
 		{
-			map[string]interface{}{
-				"name":      "dqi50n_agent",
-				"topic":     "dqi50n.out",
-				"separator": "|",
-				"endpoint":  "ipc:///tmp/dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":      "dqi50n_agent",
+					"topic":     "dqi50n.out",
+					"separator": "|",
+					"endpoint":  "ipc:///tmp/dqi50n.out",
+				},
 			},
 			"set-err",
 			errors.New("Invalid Option for socket"),

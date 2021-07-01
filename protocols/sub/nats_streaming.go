@@ -2,9 +2,13 @@ package sub
 
 import (
 	"fmt"
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
+	"strings"
+
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/service"
+	gredis "github.com/go-redis/redis"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
 
@@ -26,6 +30,7 @@ type NatsStreamSubscriber struct {
 	natsStreamConfig
 	errorChannel chan error
 	callback     func(jmsg.Message)
+	deDuplifier  service.Duplicate
 }
 
 type natsStreamConfig struct {
@@ -68,10 +73,10 @@ func NewNatsStreamSub() *NatsStreamSubscriber {
 	return sub
 }
 
-func (sub *NatsStreamSubscriber) Configure(config map[string]interface{}) error {
+func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.natsStreamConfig}
 	err = configHelper.ValidateAndSet(config)
 
@@ -87,6 +92,13 @@ func (sub *NatsStreamSubscriber) Configure(config map[string]interface{}) error 
 	}
 
 	sub.connection, err = sub.connector(url, sub.natsStreamConfig, sub.errHandler)
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 
 	return err
 }
@@ -115,7 +127,15 @@ func (sub *NatsStreamSubscriber) Close() {
 func (sub *NatsStreamSubscriber) receive(msg *natsStream.Msg) {
 
 	message := jmsg.NatsStreamMessage{jmsg.NatsStreamRawMessage{msg}, sub.connection, make(map[string]string)}
-	sub.callback(message)
+	messages := strings.Split(string(message.GetMessage()), "|")
+	if len(messages) == 4 {
+		messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+		sub.deDuplifier.UniqueID = messages[0]
+		message.SetMessage([]byte(messageString))
+	}
+	if !sub.deDuplifier.IsDuplicate() {
+		sub.callback(message)
+	}
 
 }
 

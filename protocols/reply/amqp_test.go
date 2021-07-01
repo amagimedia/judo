@@ -2,12 +2,13 @@ package reply
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
-	"github.com/streadway/amqp"
 	"testing"
 	"time"
+
+	"github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
+	"github.com/streadway/amqp"
 )
 
 func TestAmqpSubscriber(t *testing.T) {
@@ -22,173 +23,193 @@ func TestAmqpSubscriber(t *testing.T) {
 	fakeSubscriber := &AmqpReply{connector: connector}
 
 	cases := []struct {
-		config  map[string]interface{}
+		config  []interface{}
 		retVal  string
 		retType error
 	}{
 		{
-			map[string]interface{}{
-				"user":        "guest",
-				"password":    "MadFds@123",
-				"host":        "localhost",
-				"port":        "5672",
-				"queueNoWait": true,
-				"args":        nil,
-				"queueName":   "amqp2",
-				"routingKeys": "blip.da",
-				"tag":         "test",
-				"autoAck":     true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":        "guest",
+					"password":    "MadFds@123",
+					"host":        "localhost",
+					"port":        "5672",
+					"queueNoWait": true,
+					"args":        nil,
+					"queueName":   "amqp2",
+					"routingKeys": "blip.da",
+					"tag":         "test",
+					"autoAck":     true,
+				},
 			},
 			"success",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"error-qd",
 			errors.New("Error in Queue-declare"),
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"error-qos",
 			errors.New("Error in Qos"),
 		},
 		{
-			map[string]interface{}{
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"error-cfg",
 			errors.New("Key Missing : user"),
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"autoAck":      true,
+				},
 			},
 			"error-cfg-q",
 			errors.New("Key Missing : tag"),
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"tag":          "test",
-				"routingKeys":  "blip.da",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"tag":          "test",
+					"routingKeys":  "blip.da",
+					"autoAck":      true,
+				},
 			},
 			"error-conn",
 			errors.New("Cannot Create connection, Server not found"),
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"start-success",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"on-message",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"on-message-err",
 			errors.New("Disconnected from server, connection closed."),
 		},
 		{
-			map[string]interface{}{
-				"user":         "guest",
-				"password":     "MadFds@123",
-				"host":         "localhost",
-				"port":         "5672",
-				"queueDurable": true,
-				"queueNoWait":  true,
-				"args":         nil,
-				"queueName":    "amqp2",
-				"routingKeys":  "blip.da",
-				"tag":          "test",
-				"autoAck":      true,
+			[]interface{}{
+				map[string]interface{}{
+					"user":         "guest",
+					"password":     "MadFds@123",
+					"host":         "localhost",
+					"port":         "5672",
+					"queueDurable": true,
+					"queueNoWait":  true,
+					"args":         nil,
+					"queueName":    "amqp2",
+					"routingKeys":  "blip.da",
+					"tag":          "test",
+					"autoAck":      true,
+				},
 			},
 			"consume-err",
 			errors.New("Unable to consume from queue"),

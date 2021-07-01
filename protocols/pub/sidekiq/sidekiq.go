@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/publisher"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/publisher"
 	workers "github.com/jrallison/go-workers"
 )
 
@@ -50,12 +50,12 @@ type sidekiqPub struct {
 	config *Config
 }
 
-func (pub *sidekiqPub) Connect(configs map[string]interface{}) error {
+func (pub *sidekiqPub) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
 
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

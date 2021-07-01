@@ -1,4 +1,4 @@
-module github.com/amagimedia/judo/v2
+module github.com/amagimedia/judo/v3
 
 go 1.16
 

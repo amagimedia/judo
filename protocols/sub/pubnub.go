@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
-	pubnub "github.com/pubnub/go"
 	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/service"
+	gredis "github.com/go-redis/redis"
+	pubnub "github.com/pubnub/go"
 )
 
 type pubnubConnector func(pubnubConfig) (jmsg.RawPubnubClient, error)
@@ -31,6 +34,7 @@ type PubnubSubscriber struct {
 	callback        func(jmsg.Message)
 	processChannel  chan *jmsg.PubnubMessage
 	lastMessageTime int64
+	deDuplifier     service.Duplicate
 }
 
 type pubnubConfig struct {
@@ -73,16 +77,23 @@ func NewPubnubSub() *PubnubSubscriber {
 	return sub
 }
 
-func (sub *PubnubSubscriber) Configure(config map[string]interface{}) error {
+func (sub *PubnubSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.pubnubConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {
 		return err
 	}
 	sub.pubnubConfig.FileName = strings.Replace(sub.pubnubConfig.Topic, "/", "", -1)
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 
 	return err
 }
@@ -193,12 +204,19 @@ func (sub *PubnubSubscriber) receive(ec chan error) {
 
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
-		message.SetProperty("channel", sub.pubnubConfig.Topic)
-		sub.callback(message)
-		if val, ok := message.GetProperty("ack"); ok && val == "OK" {
-			err := sub.setLastTime()
-			if err != nil {
-				break
+		messages := strings.Split(string(message.GetMessage()), "|")
+		if len(messages) == 4 {
+			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+			sub.deDuplifier.UniqueID = messages[0]
+			message.SetMessage([]byte(messageString))
+		}
+		if !sub.deDuplifier.IsDuplicate() {
+			sub.callback(message)
+			if val, ok := message.GetProperty("ack"); ok && val == "OK" {
+				err := sub.setLastTime()
+				if err != nil {
+					break
+				}
 			}
 		}
 	}

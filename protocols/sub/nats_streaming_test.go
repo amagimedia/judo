@@ -2,13 +2,14 @@ package sub
 
 import (
 	"errors"
-	"github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/message"
-	"github.com/amagimedia/judo/v2/message/mocks"
-	stan "github.com/nats-io/go-nats-streaming"
-	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
+
+	"github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/message/mocks"
+	stan "github.com/nats-io/go-nats-streaming"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNatsStreamSubscriber(t *testing.T) {
@@ -25,104 +26,124 @@ func TestNatsStreamSubscriber(t *testing.T) {
 	fakeSubscriber := &NatsStreamSubscriber{connector: connector}
 
 	cases := []struct {
-		config  map[string]interface{}
+		config  []interface{}
 		retVal  string
 		retType error
 	}{
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"topic":    "dqi50n.out",
-				"cluster":  "test",
-				"endpoint": "localhost:3234",
-				"user":     "aaaa",
-				"password": "asdf",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"topic":    "dqi50n.out",
+					"cluster":  "test",
+					"endpoint": "localhost:3234",
+					"user":     "aaaa",
+					"password": "asdf",
+				},
 			},
 			"success-cfg-usr",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"topic":    "dqi50n.out",
-				"cluster":  "test",
-				"endpoint": "localhost:3234",
-				"token":    "aaaaFdsfwsnroidjf",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"topic":    "dqi50n.out",
+					"cluster":  "test",
+					"endpoint": "localhost:3234",
+					"token":    "aaaaFdsfwsnroidjf",
+				},
 			},
 			"success-cfg-tok",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"cluster":  "test",
-				"topic":    "dqi50n.out",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"cluster":  "test",
+					"topic":    "dqi50n.out",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"success-cfg-noauth",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":  "dqi50n_agent",
-				"topic": "dqi50n.out",
+			[]interface{}{
+				map[string]interface{}{
+					"name":  "dqi50n_agent",
+					"topic": "dqi50n.out",
+				},
 			},
 			"err-cfg",
 			errors.New("Key Missing : endpoint"),
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"topic":    "dqi50n.out",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"topic":    "dqi50n.out",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"err-cfg",
 			errors.New("Key Missing : cluster"),
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"cluster":  "test",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"cluster":  "test",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"err-cfg",
 			errors.New("Key Missing : topic"),
 		},
 		{
-			map[string]interface{}{
-				"topic":    "dqi50n.out",
-				"cluster":  "test",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"topic":    "dqi50n.out",
+					"cluster":  "test",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"err-cfg",
 			errors.New("Key Missing : name"),
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"cluster":  "test",
-				"topic":    "dqi50n.out",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"cluster":  "test",
+					"topic":    "dqi50n.out",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"success-start",
 			nil,
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"cluster":  "test",
-				"topic":    "dqi50n.out",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"cluster":  "test",
+					"topic":    "dqi50n.out",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"err-start",
 			errors.New("Could not create subscription"),
 		},
 		{
-			map[string]interface{}{
-				"name":     "dqi50n_agent",
-				"cluster":  "test",
-				"topic":    "dqi50n.out",
-				"endpoint": "localhost:3234",
+			[]interface{}{
+				map[string]interface{}{
+					"name":     "dqi50n_agent",
+					"cluster":  "test",
+					"topic":    "dqi50n.out",
+					"endpoint": "localhost:3234",
+				},
 			},
 			"err-conn",
 			errors.New("Disconnected, from server for dqi50n_agent"),

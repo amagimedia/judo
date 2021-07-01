@@ -1,12 +1,16 @@
 package sub
 
 import (
-	"github.com/amagimedia/judo/v2/client"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	jmsg "github.com/amagimedia/judo/v2/message"
+	"strings"
+
+	"github.com/amagimedia/judo/v3/client"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	jmsg "github.com/amagimedia/judo/v3/message"
+	"github.com/amagimedia/judo/v3/service"
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
+	gredis "github.com/go-redis/redis"
 	mangos "nanomsg.org/go-mangos"
 )
 
@@ -23,7 +27,8 @@ type NanoSubscriber struct {
 	connector  nanoConnector
 	connection jmsg.RawSocket //mangos.Socket
 	nanoConfig
-	callback func(jmsg.Message)
+	callback    func(jmsg.Message)
+	deDuplifier service.Duplicate
 }
 
 type nanoConfig struct {
@@ -59,16 +64,22 @@ func NewNanoSub() *NanoSubscriber {
 	return sub
 }
 
-func (sub *NanoSubscriber) Configure(config map[string]interface{}) error {
+func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 
 	var err error
-
+	config := configs[0].(map[string]interface{})
 	configHelper := judoConfig.ConfigHelper{&sub.nanoConfig}
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {
 		return err
 	}
-
+	if len(configs) == 2 {
+		redisConfig := configs[1].(map[string]interface{})
+		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
+			Addr:     redisConfig["endpoint"].(string),
+			Password: redisConfig["password"].(string),
+		})
+	}
 	return err
 }
 
@@ -117,7 +128,15 @@ func (sub *NanoSubscriber) receive(ec chan error) {
 			return
 		}
 		message := jmsg.NanoMessage{jmsg.NanoRawMessage{msg}, sub.connection, make(map[string]string)}
-		sub.callback(message)
+		messages := strings.Split(string(message.GetMessage()), "|")
+		if len(messages) == 4 {
+			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+			sub.deDuplifier.UniqueID = messages[0]
+			message.SetMessage([]byte(messageString))
+		}
+		if !sub.deDuplifier.IsDuplicate() {
+			sub.callback(message)
+		}
 	}
 }
 

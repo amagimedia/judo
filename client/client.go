@@ -1,11 +1,11 @@
 package client
 
 import (
-	jmsg "github.com/amagimedia/judo/v2/message"
+	jmsg "github.com/amagimedia/judo/v3/message"
 )
 
 type JudoClient interface {
-	Configure(map[string]interface{}) error
+	Configure([]interface{}) error
 	OnMessage(func(msg jmsg.Message)) JudoClient
 	Start() (<-chan error, error)
 	Close()

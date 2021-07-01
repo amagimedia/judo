@@ -3,9 +3,9 @@ package redis
 import (
 	"crypto/tls"
 
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/publisher"
-	"github.com/amagimedia/judo/v2/scripts"
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/publisher"
+	"github.com/amagimedia/judo/v3/scripts"
 	gredis "github.com/go-redis/redis"
 )
 
@@ -47,12 +47,12 @@ type redisPub struct {
 	Client *gredis.Client
 }
 
-func (pub *redisPub) Connect(configs map[string]interface{}) error {
+func (pub *redisPub) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
 
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

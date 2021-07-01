@@ -2,10 +2,11 @@ package stan
 
 import (
 	"fmt"
-	judoConfig "github.com/amagimedia/judo/v2/config"
-	"github.com/amagimedia/judo/v2/publisher"
-	gstan "github.com/nats-io/go-nats-streaming"
 	"time"
+
+	judoConfig "github.com/amagimedia/judo/v3/config"
+	"github.com/amagimedia/judo/v3/publisher"
+	gstan "github.com/nats-io/go-nats-streaming"
 )
 
 type Config struct {
@@ -53,12 +54,12 @@ type stanPub struct {
 	connected bool
 }
 
-func (pub *stanPub) Connect(configs map[string]interface{}) error {
+func (pub *stanPub) Connect(configs []interface{}) error {
 
 	config := &Config{}
 	cfgHelper := judoConfig.ConfigHelper{config}
 
-	err := cfgHelper.ValidateAndSet(configs)
+	err := cfgHelper.ValidateAndSet(configs[0].(map[string]interface{}))
 	if err != nil {
 		return err
 	}

@@ -29,7 +29,7 @@ func TestCreateSubscriberFailure(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		_, err := NewSubscriber(c.protocol, c.method)
+		_, err := NewSubscriber(c.protocol, c.method, "", "")
 		if err == nil {
 			t.Errorf("Error Should be thrown for invalid protocol and methods: ")
 		}
@@ -75,7 +75,7 @@ func TestCreateSubscriberSuccess(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		retVal, err := NewSubscriber(c.protocol, c.method)
+		retVal, err := NewSubscriber(c.protocol, c.method, "", "")
 		if err != nil {
 			t.Error("Unknown error while creating subscriber: ", err.Error())
 		}
@@ -139,7 +139,7 @@ func TestCreatePublisherSuccess(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		retVal, err := NewPublisher(c.protocol, c.method)
+		retVal, err := NewPublisher(c.protocol, c.method, "", "")
 		if err != nil {
 			t.Error("Unknown error while creating subscriber: ", err.Error())
 		}
