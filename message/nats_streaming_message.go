@@ -36,3 +36,11 @@ func (m NatsStreamMessage) SendAck(ackMsg ...[]byte) {
 func (m NatsStreamMessage) SendNack(ackMessage ...[]byte) {
 	return
 }
+
+func (m NatsStreamMessage) SendAckWithError(ackMsg ...[]byte) error {
+	return m.RawMessage.Ack(false)
+}
+
+func (m NatsStreamMessage) SendNackWithError(ackMessage ...[]byte) error {
+	return nil
+}

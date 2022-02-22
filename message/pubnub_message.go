@@ -37,3 +37,13 @@ func (m *PubnubMessage) SendNack(ackMessage ...[]byte) {
 	m.SetProperty("ack", "NOK")
 	return
 }
+
+func (m *PubnubMessage) SendAckWithError(ackMsg ...[]byte) error {
+	m.SetProperty("ack", "OK")
+	return nil
+}
+
+func (m *PubnubMessage) SendNackWithError(ackMessage ...[]byte) error {
+	m.SetProperty("ack", "NOK")
+	return nil
+}

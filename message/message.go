@@ -19,6 +19,8 @@ type Message interface {
 	SetProperty(string, string)
 	SendAck(...[]byte)
 	SendNack(...[]byte)
+	SendAckWithError(...[]byte) error
+	SendNackWithError(...[]byte) error
 }
 
 type RawMessage interface {

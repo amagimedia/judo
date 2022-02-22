@@ -45,3 +45,19 @@ func (m NatsMessage) SendNack(ackMessage ...[]byte) {
 	m.Responder.Publish(m.RawMessage.GetReplyTo(), resp)
 	return
 }
+
+func (m NatsMessage) SendAckWithError(ackMsg ...[]byte) error {
+	resp := []byte("OK")
+	if len(ackMsg) > 0 {
+		resp = ackMsg[0]
+	}
+	return m.Responder.Publish(m.RawMessage.GetReplyTo(), resp)
+}
+
+func (m NatsMessage) SendNackWithError(ackMessage ...[]byte) error {
+	resp := []byte("NOK")
+	if len(ackMessage) > 0 {
+		resp = ackMessage[0]
+	}
+	return m.Responder.Publish(m.RawMessage.GetReplyTo(), resp)
+}
