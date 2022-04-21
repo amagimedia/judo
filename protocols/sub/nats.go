@@ -3,6 +3,8 @@ package sub
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
@@ -88,11 +90,10 @@ func (sub *NatsSubscriber) Configure(configs []interface{}) error {
 	}
 
 	sub.connection, err = sub.connector(url)
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
+	if _, ok := os.LookupEnv("REDIS_URL"); ok {
 		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
+			Addr:     os.Getenv("REDIS_URL"),
+			Password: os.Getenv("REDIS_PASSWORD"),
 		})
 	}
 
@@ -127,10 +128,9 @@ func (sub *NatsSubscriber) receive(ec chan error) {
 	for msg := range sub.msgQueue {
 		message := jmsg.NatsMessage{jmsg.NatsRawMessage{msg}, sub.connection, make(map[string]string)}
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 4 {
-			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
-			sub.deDuplifier.UniqueID = messages[0]
-			message.SetMessage([]byte(messageString))
+		if len(messages) == 6 {
+			sub.deDuplifier.EventID = messages[len(messages)-1]
+			sub.deDuplifier.TimeStamp, _ = strconv.ParseInt(messages[3], 10, 0)
 		}
 		if !sub.deDuplifier.IsDuplicate() {
 			sub.callback(message)

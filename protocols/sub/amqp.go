@@ -3,6 +3,8 @@ package sub
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
@@ -142,10 +144,9 @@ func (sub *AmqpSubscriber) Start() (<-chan error, error) {
 		for msg := range sub.msgQueue {
 			wrappedMsg := jmsg.AmqpMessage{jmsg.AmqpRawMessage{msg}, sub.channel, make(map[string]string)}
 			messages := strings.Split(string(wrappedMsg.GetMessage()), "|")
-			if len(messages) == 4 {
-				messageString := strings.Replace(string(wrappedMsg.GetMessage()), messages[0]+"|", "", 1)
-				sub.deDuplifier.UniqueID = messages[0]
-				wrappedMsg.SetMessage([]byte(messageString))
+			if len(messages) == 6 {
+				sub.deDuplifier.EventID = messages[len(messages)-1]
+				sub.deDuplifier.TimeStamp, _ = strconv.ParseInt(messages[3], 10, 0)
 			}
 			if !sub.deDuplifier.IsDuplicate() {
 				wrappedMsg.SetProperty("protocol_type", "subscribe")
@@ -190,11 +191,10 @@ func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 
 	err = sub.setup(sub.amqpConfig)
 
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
+	if _, ok := os.LookupEnv("REDIS_URL"); ok {
 		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
+			Addr:     os.Getenv("REDIS_URL"),
+			Password: os.Getenv("REDIS_PASSWORD"),
 		})
 	}
 
