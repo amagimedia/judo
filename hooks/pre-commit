@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+PATH=$PATH:$(pwd)/hooks
+git secrets --register-aws
+git secrets  --pre_commit_hook -- "$@"
