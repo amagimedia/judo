@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
@@ -144,9 +143,10 @@ func (sub *AmqpSubscriber) Start() (<-chan error, error) {
 		for msg := range sub.msgQueue {
 			wrappedMsg := jmsg.AmqpMessage{jmsg.AmqpRawMessage{msg}, sub.channel, make(map[string]string)}
 			messages := strings.Split(string(wrappedMsg.GetMessage()), "|")
-			if len(messages) == 6 {
-				sub.deDuplifier.EventID = messages[len(messages)-1]
-				sub.deDuplifier.TimeStamp, _ = strconv.ParseInt(messages[3], 10, 0)
+			if len(messages) == 7 {
+				messageString := strings.Replace(string(wrappedMsg.GetMessage()), messages[0]+"|", "", 1)
+				sub.deDuplifier.UniqueID = messages[0]
+				wrappedMsg.SetMessage([]byte(messageString))
 			}
 			if !sub.deDuplifier.IsDuplicate() {
 				wrappedMsg.SetProperty("protocol_type", "subscribe")
