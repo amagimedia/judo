@@ -1,12 +1,15 @@
 package pub
 
 import (
+	"fmt"
+
 	pubnubPub "github.com/amagimedia/judo/v3/protocols/pub/pubnub"
 	redispub "github.com/amagimedia/judo/v3/protocols/pub/redis"
 	sidekiqpub "github.com/amagimedia/judo/v3/protocols/pub/sidekiq"
 	stanpub "github.com/amagimedia/judo/v3/protocols/pub/stan"
 	nanoreq "github.com/amagimedia/judo/v3/protocols/req/nano"
 	"github.com/amagimedia/judo/v3/publisher"
+	"github.com/google/uuid"
 )
 
 type AmagiPub struct {
@@ -43,12 +46,15 @@ func (publishers *AmagiPub) Connect(configs []interface{}) error {
 }
 
 func (publishers *AmagiPub) Publish(subject string, msg []byte) error {
-	err := publishers.primaryPublisher.Publish(subject, msg)
+	dt, _ := uuid.NewRandom()
+	msgString := fmt.Sprintf("%s|%s", dt.String(), string(msg))
+	msgNew := []byte(msgString)
+	err := publishers.primaryPublisher.Publish(subject, msgNew)
 	if err != nil {
 		return err
 	}
 	if publishers.backupPublisher != nil {
-		err = publishers.backupPublisher.Publish(subject, msg)
+		err = publishers.backupPublisher.Publish(subject, msgNew)
 		return err
 	}
 	return nil

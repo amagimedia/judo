@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
@@ -128,9 +127,10 @@ func (sub *NatsSubscriber) receive(ec chan error) {
 	for msg := range sub.msgQueue {
 		message := jmsg.NatsMessage{jmsg.NatsRawMessage{msg}, sub.connection, make(map[string]string)}
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 6 {
-			sub.deDuplifier.EventID = messages[len(messages)-1]
-			sub.deDuplifier.TimeStamp, _ = strconv.ParseInt(messages[3], 10, 0)
+		if len(messages) == 7 {
+			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
+			sub.deDuplifier.UniqueID = messages[0]
+			message.SetMessage([]byte(messageString))
 		}
 		if !sub.deDuplifier.IsDuplicate() {
 			sub.callback(message)
