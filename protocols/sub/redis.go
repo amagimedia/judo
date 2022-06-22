@@ -89,12 +89,6 @@ func (sub *RedisSubscriber) Configure(configs []interface{}) error {
 		return err
 	}
 	sub.redisConfig.FileName = strings.Replace(sub.redisConfig.Topic, "/", "", -1)
-	if _, ok := os.LookupEnv("REDIS_URL"); ok {
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     os.Getenv("REDIS_URL"),
-			Password: os.Getenv("REDIS_PASSWORD"),
-		})
-	}
 
 	return err
 }

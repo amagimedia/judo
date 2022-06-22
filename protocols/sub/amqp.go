@@ -3,14 +3,12 @@ package sub
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	"github.com/streadway/amqp"
 )
 
@@ -190,13 +188,6 @@ func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 	}
 
 	err = sub.setup(sub.amqpConfig)
-
-	if _, ok := os.LookupEnv("REDIS_URL"); ok {
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     os.Getenv("REDIS_URL"),
-			Password: os.Getenv("REDIS_PASSWORD"),
-		})
-	}
 
 	return err
 }
