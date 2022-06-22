@@ -1,7 +1,6 @@
 package sub
 
 import (
-	"os"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
@@ -11,7 +10,6 @@ import (
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
-	gredis "github.com/go-redis/redis"
 	mangos "nanomsg.org/go-mangos"
 )
 
@@ -73,12 +71,6 @@ func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {
 		return err
-	}
-	if _, ok := os.LookupEnv("REDIS_URL"); ok {
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     os.Getenv("REDIS_URL"),
-			Password: os.Getenv("REDIS_PASSWORD"),
-		})
 	}
 	return err
 }

@@ -13,7 +13,6 @@ import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	pubnub "github.com/pubnub/go"
 )
 
@@ -92,13 +91,6 @@ func (sub *PubnubSubscriber) Configure(configs []interface{}) error {
 		return err
 	}
 	sub.pubnubConfig.FileName = strings.Replace(sub.pubnubConfig.Topic, "/", "", -1)
-	if _, ok := os.LookupEnv("REDIS_URL"); ok {
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     os.Getenv("REDIS_URL"),
-			Password: os.Getenv("REDIS_PASSWORD"),
-		})
-	}
-
 	return err
 }
 

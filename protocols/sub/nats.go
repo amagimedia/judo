@@ -3,14 +3,12 @@ package sub
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/amagimedia/judo/v3/client"
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 )
 
@@ -89,13 +87,6 @@ func (sub *NatsSubscriber) Configure(configs []interface{}) error {
 	}
 
 	sub.connection, err = sub.connector(url)
-	if _, ok := os.LookupEnv("REDIS_URL"); ok {
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     os.Getenv("REDIS_URL"),
-			Password: os.Getenv("REDIS_PASSWORD"),
-		})
-	}
-
 	return err
 }
 
