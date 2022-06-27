@@ -119,7 +119,7 @@ func (sub *NatsStreamSubscriber) receive(msg *natsStream.Msg) {
 
 	message := jmsg.NatsStreamMessage{jmsg.NatsStreamRawMessage{msg}, sub.connection, make(map[string]string)}
 	messages := strings.Split(string(message.GetMessage()), "|")
-	if len(messages) == 7 {
+	if len(messages) == 5 {
 		messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 		sub.deDuplifier.UniqueID = messages[0]
 		message.SetMessage([]byte(messageString))

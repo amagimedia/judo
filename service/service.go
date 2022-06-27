@@ -14,12 +14,12 @@ var redisConn *gredis.Client
 
 func (d Duplicate) IsDuplicate() bool {
 	// Ignore duplicates if REDIS is not set in environment varibales
-	if _, ok := os.LookupEnv("REDIS_URL"); !ok {
+	if _, ok := os.LookupEnv("CPLIVE_REDIS_URL"); !ok {
 		return false
 	}
 	var redisConn = gredis.NewClient(&gredis.Options{
-		Addr:     os.Getenv("REDIS_URL"),
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     os.Getenv("CPLIVE_REDIS_URL"),
+		Password: os.Getenv("CPLIVE_REDIS_PASSWORD"),
 	})
 
 	topic := getSetName()
