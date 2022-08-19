@@ -1,6 +1,7 @@
 package sub
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -82,9 +83,20 @@ func (sub *PubnubSubscriber) Configure(config map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	err = validatePubnubConfig(sub.pubnubConfig)
+	if err != nil {
+		return err
+	}
 	sub.pubnubConfig.FileName = strings.Replace(sub.pubnubConfig.Topic, "/", "", -1)
 
 	return err
+}
+
+func validatePubnubConfig(cfg pubnubConfig) error {
+	if cfg.SubscribeKey == "" {
+		return errors.New("Subscribe Key Missing")
+	}
+	return nil
 }
 
 func (sub *PubnubSubscriber) Close() {
