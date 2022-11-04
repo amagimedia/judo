@@ -9,7 +9,6 @@ import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 )
 
@@ -88,14 +87,6 @@ func (sub *NatsSubscriber) Configure(configs []interface{}) error {
 	}
 
 	sub.connection, err = sub.connector(url)
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
-
 	return err
 }
 
@@ -127,7 +118,7 @@ func (sub *NatsSubscriber) receive(ec chan error) {
 	for msg := range sub.msgQueue {
 		message := jmsg.NatsMessage{jmsg.NatsRawMessage{msg}, sub.connection, make(map[string]string)}
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 4 {
+		if len(messages) == 5 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			sub.deDuplifier.UniqueID = messages[0]
 			message.SetMessage([]byte(messageString))

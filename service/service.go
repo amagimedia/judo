@@ -1,24 +1,33 @@
 package service
 
 import (
+	"os"
+
 	gredis "github.com/go-redis/redis"
 )
 
 type Duplicate struct {
-	RedisConn *gredis.Client
-	UniqueID  string
+	UniqueID string
 }
 
+var redisConn *gredis.Client
+
 func (d Duplicate) IsDuplicate() bool {
-	if d.RedisConn == nil {
+	// Ignore duplicates if REDIS is not set in environment varibales
+	if _, ok := os.LookupEnv("CPLIVE_REDIS_URL"); !ok {
 		return false
 	}
+	var redisConn = gredis.NewClient(&gredis.Options{
+		Addr:     os.Getenv("CPLIVE_REDIS_URL"),
+		Password: os.Getenv("CPLIVE_REDIS_PASSWORD"),
+	})
+
 	topic := getSetName()
-	if d.RedisConn.SIsMember(topic, d.UniqueID).Val() {
-		d.RedisConn.SRem(topic, d.UniqueID)
+	if redisConn.SIsMember(topic, d.UniqueID).Val() {
+		redisConn.SRem(topic, d.UniqueID)
 		return true
 	}
-	d.RedisConn.SAdd(topic, d.UniqueID)
+	redisConn.SAdd(topic, d.UniqueID)
 	return false
 }
 

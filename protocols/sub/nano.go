@@ -10,7 +10,6 @@ import (
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
-	gredis "github.com/go-redis/redis"
 	mangos "nanomsg.org/go-mangos"
 )
 
@@ -73,13 +72,6 @@ func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 	if err != nil {
 		return err
 	}
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
 	return err
 }
 
@@ -129,7 +121,7 @@ func (sub *NanoSubscriber) receive(ec chan error) {
 		}
 		message := jmsg.NanoMessage{jmsg.NanoRawMessage{msg}, sub.connection, make(map[string]string)}
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 4 {
+		if len(messages) == 5 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			sub.deDuplifier.UniqueID = messages[0]
 			message.SetMessage([]byte(messageString))

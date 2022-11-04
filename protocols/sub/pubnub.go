@@ -13,7 +13,6 @@ import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	pubnub "github.com/pubnub/go"
 )
 
@@ -92,14 +91,6 @@ func (sub *PubnubSubscriber) Configure(configs []interface{}) error {
 		return err
 	}
 	sub.pubnubConfig.FileName = strings.Replace(sub.pubnubConfig.Topic, "/", "", -1)
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
-
 	return err
 }
 
@@ -217,7 +208,7 @@ func (sub *PubnubSubscriber) receive(ec chan error) {
 func (sub *PubnubSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 4 {
+		if len(messages) == 5 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			sub.deDuplifier.UniqueID = messages[0]
 			message.SetMessage([]byte(messageString))
