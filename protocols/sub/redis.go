@@ -89,13 +89,6 @@ func (sub *RedisSubscriber) Configure(configs []interface{}) error {
 		return err
 	}
 	sub.redisConfig.FileName = strings.Replace(sub.redisConfig.Topic, "/", "", -1)
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
 
 	return err
 }
@@ -156,8 +149,8 @@ func (sub *RedisSubscriber) handleMessage(ec chan error) {
 		messages := strings.Split(string(message.GetMessage()), "|")
 		if len(messages) == 4 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
-			message.SetMessage([]byte(messageString))
 			sub.deDuplifier.UniqueID = messages[0]
+			message.SetMessage([]byte(messageString))
 		}
 		if !sub.deDuplifier.IsDuplicate() {
 			sub.callback(message)

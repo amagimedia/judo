@@ -9,7 +9,6 @@ import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	"github.com/streadway/amqp"
 )
 
@@ -189,14 +188,6 @@ func (sub *AmqpSubscriber) Configure(configs []interface{}) error {
 	}
 
 	err = sub.setup(sub.amqpConfig)
-
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
 
 	return err
 }

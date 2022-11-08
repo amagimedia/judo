@@ -8,7 +8,6 @@ import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
-	gredis "github.com/go-redis/redis"
 	natsStream "github.com/nats-io/go-nats-streaming"
 )
 
@@ -92,14 +91,6 @@ func (sub *NatsStreamSubscriber) Configure(configs []interface{}) error {
 	}
 
 	sub.connection, err = sub.connector(url, sub.natsStreamConfig, sub.errHandler)
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
-	}
-
 	return err
 }
 

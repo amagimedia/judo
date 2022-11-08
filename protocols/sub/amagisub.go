@@ -20,12 +20,12 @@ func NewAmagiSub(primarySubProtocol, backupSubProtocol string) *AmagiSubscriber 
 }
 
 func (subs *AmagiSubscriber) Configure(config []interface{}) error {
-	primaryConfig := []interface{}{config[0], config[2]}
+	primaryConfig := []interface{}{config[0]}
 	err := subs.primarySubscriber.Configure(primaryConfig)
 	if err != nil {
 		return err
 	}
-	backupConfig := []interface{}{config[1], config[2]}
+	backupConfig := []interface{}{config[1]}
 	err = subs.backupSubscriber.Configure(backupConfig)
 	if err != nil {
 		return err

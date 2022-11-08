@@ -10,7 +10,6 @@ import (
 	mangoSub "github.com/go-mangos/mangos/protocol/sub"
 	"github.com/go-mangos/mangos/transport/ipc"
 	"github.com/go-mangos/mangos/transport/tcp"
-	gredis "github.com/go-redis/redis"
 	mangos "nanomsg.org/go-mangos"
 )
 
@@ -72,13 +71,6 @@ func (sub *NanoSubscriber) Configure(configs []interface{}) error {
 	err = configHelper.ValidateAndSet(config)
 	if err != nil {
 		return err
-	}
-	if len(configs) == 2 {
-		redisConfig := configs[1].(map[string]interface{})
-		sub.deDuplifier.RedisConn = gredis.NewClient(&gredis.Options{
-			Addr:     redisConfig["endpoint"].(string),
-			Password: redisConfig["password"].(string),
-		})
 	}
 	return err
 }
