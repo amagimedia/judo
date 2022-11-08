@@ -147,7 +147,7 @@ func (sub *RedisSubscriber) receive(ec chan error) {
 func (sub *RedisSubscriber) handleMessage(ec chan error) {
 	for message := range sub.processChannel {
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 5 {
+		if len(messages) == 4 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			sub.deDuplifier.UniqueID = messages[0]
 			message.SetMessage([]byte(messageString))

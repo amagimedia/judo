@@ -118,7 +118,7 @@ func (sub *NatsSubscriber) receive(ec chan error) {
 	for msg := range sub.msgQueue {
 		message := jmsg.NatsMessage{jmsg.NatsRawMessage{msg}, sub.connection, make(map[string]string)}
 		messages := strings.Split(string(message.GetMessage()), "|")
-		if len(messages) == 5 {
+		if len(messages) == 4 {
 			messageString := strings.Replace(string(message.GetMessage()), messages[0]+"|", "", 1)
 			sub.deDuplifier.UniqueID = messages[0]
 			message.SetMessage([]byte(messageString))

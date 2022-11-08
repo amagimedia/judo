@@ -141,7 +141,7 @@ func (sub *AmqpSubscriber) Start() (<-chan error, error) {
 		for msg := range sub.msgQueue {
 			wrappedMsg := jmsg.AmqpMessage{jmsg.AmqpRawMessage{msg}, sub.channel, make(map[string]string)}
 			messages := strings.Split(string(wrappedMsg.GetMessage()), "|")
-			if len(messages) == 5 {
+			if len(messages) == 4 {
 				messageString := strings.Replace(string(wrappedMsg.GetMessage()), messages[0]+"|", "", 1)
 				sub.deDuplifier.UniqueID = messages[0]
 				wrappedMsg.SetMessage([]byte(messageString))
