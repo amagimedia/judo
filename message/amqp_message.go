@@ -56,3 +56,28 @@ func (m AmqpMessage) SendAck(ackMessage ...[]byte) {
 func (m AmqpMessage) SendNack(ackMessage ...[]byte) {
 	m.RawMessage.Nack(false, true)
 }
+
+func (m AmqpMessage) SendAckWithError(ackMessage ...[]byte) error {
+	if val, ok := m.GetProperty("protocol_type"); ok && val == "reqrep" {
+		resp := []byte("OK")
+		if len(ackMessage) > 0 {
+			resp = ackMessage[0]
+		}
+		m.Responder.Publish(
+			"",
+			m.RawMessage.GetReplyTo(),
+			false,
+			false,
+			amqp.Publishing{
+				ContentType:   "text/plain",
+				CorrelationId: m.RawMessage.GetCorrelationId(),
+				Body:          resp,
+			},
+		)
+	}
+	return m.RawMessage.Ack(false)
+}
+
+func (m AmqpMessage) SendNackWithError(ackMessage ...[]byte) error {
+	return m.RawMessage.Nack(false, true)
+}

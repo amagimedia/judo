@@ -37,3 +37,13 @@ func (m *RedisMessage) SendNack(ackMessage ...[]byte) {
 	m.SetProperty("ack", "NOK")
 	return
 }
+
+func (m *RedisMessage) SendAckWithError(ackMsg ...[]byte) error {
+	m.SetProperty("ack", "OK")
+	return nil
+}
+
+func (m *RedisMessage) SendNackWithError(ackMessage ...[]byte) error {
+	m.SetProperty("ack", "NOK")
+	return nil
+}

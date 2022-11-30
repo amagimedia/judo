@@ -45,3 +45,19 @@ func (m NanoMessage) SendNack(ackMessage ...[]byte) {
 	m.Responder.Send(resp)
 	return
 }
+
+func (m NanoMessage) SendAckWithError(ackMsg ...[]byte) error {
+	resp := []byte("OK")
+	if len(ackMsg) > 0 {
+		resp = ackMsg[0]
+	}
+	return m.Responder.Send(resp)
+}
+
+func (m NanoMessage) SendNackWithError(ackMessage ...[]byte) error {
+	resp := []byte("ERR")
+	if len(ackMessage) > 0 {
+		resp = ackMessage[0]
+	}
+	return m.Responder.Send(resp)
+}
