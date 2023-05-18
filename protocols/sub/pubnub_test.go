@@ -7,7 +7,7 @@ import (
 
 	"github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/message/mocks"
-	pubnub "github.com/pubnub/go"
+	pubnub "github.com/pubnub/go/v7"
 	"github.com/stretchr/testify/mock"
 )
 

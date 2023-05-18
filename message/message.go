@@ -7,7 +7,7 @@ import (
 	gredis "github.com/go-redis/redis"
 	nats "github.com/nats-io/go-nats"
 	natsStream "github.com/nats-io/go-nats-streaming"
-	pubnub "github.com/pubnub/go"
+	pubnub "github.com/pubnub/go/v7"
 	"github.com/streadway/amqp"
 	mangos "nanomsg.org/go-mangos"
 )

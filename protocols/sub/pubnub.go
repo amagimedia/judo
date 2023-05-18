@@ -14,7 +14,7 @@ import (
 	jmsg "github.com/amagimedia/judo/v3/message"
 	"github.com/amagimedia/judo/v3/service"
 	gredis "github.com/go-redis/redis"
-	pubnub "github.com/pubnub/go"
+	pubnub "github.com/pubnub/go/v7"
 )
 
 type pubnubConnector func(pubnubConfig) (jmsg.RawPubnubClient, error)

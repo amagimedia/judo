@@ -3,7 +3,7 @@ package pubnub
 import (
 	judoConfig "github.com/amagimedia/judo/v3/config"
 	"github.com/amagimedia/judo/v3/publisher"
-	pubnub "github.com/pubnub/go"
+	pubnub "github.com/pubnub/go/v7"
 )
 
 type Config struct {
