@@ -10,10 +10,11 @@ type Config struct {
 	SubscribeKey string
 	PublishKey   string
 	SecretKey    string
+	Origin       string
 }
 
 func (c *Config) GetKeys() []string {
-	return []string{"subscribe_key", "publish_key", "secret_key"}
+	return []string{"subscribe_key", "publish_key", "secret_key", "origin"}
 }
 
 func (c *Config) GetMandatoryKeys() []string {
@@ -28,6 +29,8 @@ func (c *Config) GetField(key string) string {
 		return "PublishKey"
 	case "secret_key":
 		return "SecretKey"
+	case "origin":
+		return "Origin"
 	default:
 		return ""
 	}
@@ -53,6 +56,9 @@ func (pub *pubnubPub) Connect(configs map[string]interface{}) error {
 	cfg.PublishKey = config.PublishKey
 	if config.SecretKey != "" {
 		cfg.SecretKey = config.SecretKey
+	}
+	if config.Origin != "" {
+		cfg.Origin = config.Origin
 	}
 	pub.Client = pubnub.NewPubNub(cfg)
 
